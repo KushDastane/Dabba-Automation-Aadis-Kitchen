@@ -5,6 +5,7 @@ import {
   doc,
   updateDoc,
   serverTimestamp,
+  getDoc,
 } from "firebase/firestore";
 import { addLedgerEntry } from "./ledgerService";
 import { notify } from "./notificationService";
@@ -12,7 +13,7 @@ import { ADMIN_UID } from "../constants/admin";
 
 // student submits payment
 export const submitPayment = async ({ studentId, amount, slipUrl }) => {
-  await addDoc(collection(db, "payments"), {
+  const paymentRef = await addDoc(collection(db, "payments"), {
     studentId,
     amount,
     slipUrl,
@@ -22,12 +23,28 @@ export const submitPayment = async ({ studentId, amount, slipUrl }) => {
     reviewedAt: null,
   });
 
+  let studentName = "Student";
+  try {
+    const userSnap = await getDoc(doc(db, "users", studentId));
+    if (userSnap.exists()) {
+      studentName = userSnap.data().name || studentName;
+    }
+  } catch (err) {
+    console.error("Failed to fetch student name", err);
+  }
+
   await notify({
     userId: ADMIN_UID,
     role: "admin",
     type: "PAYMENT_SUBMITTED",
     title: "Payment Submitted",
-    message: "A payment is waiting for verification.",
+    message: `${studentName} submitted a payment of ₹${amount}.`,
+    data: {
+      studentId,
+      studentName,
+      paymentId: paymentRef.id,
+      amount,
+    },
   });
 };
 
@@ -46,12 +63,17 @@ export const acceptPayment = async (paymentId, paymentData) => {
     sourceId: paymentId,
     amount: paymentData.amount,
   });
+
   await notify({
     userId: paymentData.studentId,
     role: "student",
     type: "PAYMENT_ACCEPTED",
     title: "Payment Accepted",
-    message: "Your payment has been verified successfully.",
+    message: `Your payment of ₹${paymentData.amount} was accepted.`,
+    data: {
+      paymentId,
+      amount: paymentData.amount,
+    },
   });
 };
 
@@ -68,5 +90,8 @@ export const rejectPayment = async (paymentId, paymentData) => {
     type: "PAYMENT_REJECTED",
     title: "Payment Rejected",
     message: "Payment verification failed. Please contact admin.",
+    data: {
+      paymentId,
+    },
   });
 };

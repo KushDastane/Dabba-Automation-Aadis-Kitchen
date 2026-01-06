@@ -8,36 +8,49 @@ export default function DevLogin() {
   const [code, setCode] = useState("");
   const [confirmation, setConfirmation] = useState(null);
 
- const sendOtp = async () => {
-   try {
-     if (!window.recaptchaVerifier) {
-       window.recaptchaVerifier = new RecaptchaVerifier(
-         auth,
-         "recaptcha-container",
-         {
-           size: "normal", // IMPORTANT: not invisible
-         }
-       );
-     }
+  const sendOtp = async () => {
+    try {
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(
+          auth,
+          "recaptcha-container",
+          {
+            size: "normal", // IMPORTANT: not invisible
+          }
+        );
+      }
 
-     const confirmationResult = await signInWithPhoneNumber(
-       auth,
-       phone,
-       window.recaptchaVerifier
-     );
+      const confirmationResult = await signInWithPhoneNumber(
+        auth,
+        phone,
+        window.recaptchaVerifier
+      );
 
-     setConfirmation(confirmationResult);
-     alert("OTP sent (use test OTP)");
-   } catch (err) {
-     console.error(err);
-     alert(err.message);
-   }
- };
-
+      setConfirmation(confirmationResult);
+      alert("OTP sent (use test OTP)");
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  };
 
   const verifyOtp = async () => {
-    await confirmation.confirm(code);
-    alert("Logged in successfully");
+    if (!confirmation) {
+      alert("Please request OTP first");
+      return;
+    }
+
+    if (!code) {
+      alert("Enter OTP");
+      return;
+    }
+
+    try {
+      await confirmation.confirm(code);
+      alert("Logged in successfully");
+    } catch (err) {
+      alert("Invalid OTP");
+    }
   };
 
   return (
@@ -73,7 +86,7 @@ export default function DevLogin() {
             onClick={async () => {
               await signOut(auth);
               alert("Logged out");
-              window.location.reload();
+              await signOut(auth);
             }}
           >
             Logout
