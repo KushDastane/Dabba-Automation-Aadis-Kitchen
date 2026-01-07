@@ -21,6 +21,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import Orders from "./pages/admin/Orders";
 import Payments from "./pages/admin/Payments";
 import Menu from "./pages/admin/Menu";
+import KitchenSettings from "./pages/admin/KitchenSettings";
 
 export default function App() {
   const { loading, isAuthenticated, isProfileComplete, role } = useAuthUser();
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/" element={<AdminDashboard />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/menu" element={<Menu />} />
+          <Route path="/kitchen" element={<KitchenSettings />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

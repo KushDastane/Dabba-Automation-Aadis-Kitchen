@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { FiHome, FiClipboard, FiCreditCard, FiBookOpen } from "react-icons/fi";
+import { FiHome, FiClipboard, FiCreditCard, FiBookOpen, FiSettings } from "react-icons/fi";
 
 export default function AdminBottomNav() {
   const navigate = useNavigate();
@@ -31,6 +31,12 @@ export default function AdminBottomNav() {
           label="Payments"
           active={pathname === "/payments"}
           onClick={() => navigate("/payments")}
+        />
+        <NavItem
+          icon={<FiSettings />}
+          label="Settings"
+          active={pathname === "/kitchen"}
+          onClick={() => navigate("/kitchen")}
         />
       </div>
     </nav>
