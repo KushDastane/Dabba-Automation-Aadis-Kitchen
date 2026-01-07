@@ -2,14 +2,8 @@ import { db } from "../firebase/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 /**
- * notify({
- *   userId,
- *   role,
- *   type,
- *   title,
- *   message,   // fallback text
- *   data       // optional structured context
- * })
+ * Generic notification creator
+ * Supports extra metadata via `data`
  */
 export const notify = async ({
   userId,
@@ -25,7 +19,7 @@ export const notify = async ({
     type,
     title,
     message,
-    data, // ✅ NEW
+    data, // ✅ structured metadata for future UI/actions
     read: false,
     createdAt: serverTimestamp(),
   });

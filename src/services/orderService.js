@@ -5,11 +5,17 @@ import {
   serverTimestamp,
   doc,
   getDoc,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 import { getTodayKey } from "./menuService";
 import { notify } from "./notificationService";
 import { ADMIN_UID } from "../constants/admin";
 
+/**
+ * STUDENT: Place order
+ */
 export const placeStudentOrder = async ({ studentId, mealType, items }) => {
   const dateKey = getTodayKey();
 
@@ -24,7 +30,7 @@ export const placeStudentOrder = async ({ studentId, mealType, items }) => {
     createdBy: "student",
   });
 
-  // 🔹 Fetch student name (one read, worth it)
+  // 🔹 Fetch student name for better admin notification
   let studentName = "Student";
   try {
     const userSnap = await getDoc(doc(db, "users", studentId));
@@ -42,10 +48,34 @@ export const placeStudentOrder = async ({ studentId, mealType, items }) => {
     title: "New Order Placed",
     message: `${studentName} placed a new order.`,
     data: {
+      orderId: orderRef.id,
       studentId,
       studentName,
-      orderId: orderRef.id,
       mealType,
     },
   });
+
+  return orderRef.id;
+};
+
+/**
+ * STUDENT: Get today’s order (used by dashboard & order screen)
+ */
+export const getTodayStudentOrder = async (studentId) => {
+  const dateKey = getTodayKey();
+
+  const q = query(
+    collection(db, "orders"),
+    where("studentId", "==", studentId),
+    where("date", "==", dateKey)
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) return null;
+
+  return {
+    id: snap.docs[0].id,
+    ...snap.docs[0].data(),
+  };
 };
