@@ -20,6 +20,13 @@ export const getTodayMenu = async () => {
   return snap.exists() ? snap.data() : null;
 };
 
+export const getMenuForDate = async (dateKey) => {
+  const ref = doc(db, "menus", dateKey);
+  const snap = await getDoc(ref);
+
+  return snap.exists() ? snap.data() : null;
+};
+
 export const getTodayKey = () => {
   const d = new Date();
   return d.toISOString().split("T")[0];

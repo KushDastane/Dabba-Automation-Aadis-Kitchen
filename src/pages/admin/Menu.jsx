@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "../../components/layout/PageHeader";
 import { db } from "../../firebase/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { getTodayKey } from "../../services/menuService";
+import { getTodayKey, getMenuForDate } from "../../services/menuService";
 
 const OTHER_SUGGESTIONS = ["Misal Pav", "Pav Bhaji", "Thalipeeth"];
 const FULL_ADDON_SUGGESTIONS = ["Dal Rice", "Kadhi Rice", "Biryani"];
@@ -14,6 +14,13 @@ export default function Menu() {
 
   const [date, setDate] = useState(getTodayKey());
   const [type, setType] = useState(""); // ROTI_SABZI | OTHER
+
+  // View mode: 'summary' or 'edit'
+  const [viewMode, setViewMode] = useState("summary");
+  const [editingSlot, setEditingSlot] = useState(null); // which slot is being edited
+
+  // Today's menu data for summary view
+  const [todayMenuData, setTodayMenuData] = useState(null);
 
   // Roti–Sabzi
   const [sabzi, setSabzi] = useState("");
@@ -33,6 +40,78 @@ export default function Menu() {
 
   // Extras
   const [extras, setExtras] = useState([{ name: "Roti", price: 7 }]);
+
+  // Load today's menu data for summary view
+  useEffect(() => {
+    const loadTodayMenu = async () => {
+      const todayKey = getTodayKey();
+      const menuData = await getMenuForDate(todayKey);
+      setTodayMenuData(menuData);
+    };
+
+    loadTodayMenu();
+  }, []);
+
+  // Load existing menu data when date or meal slot changes (for edit mode)
+  useEffect(() => {
+    if (viewMode === "edit" && editingSlot) {
+      const loadMenu = async () => {
+        const menuData = await getMenuForDate(date);
+        if (menuData && menuData[editingSlot]) {
+          const menu = menuData[editingSlot];
+          setType(menu.type || "");
+
+          if (menu.type === "ROTI_SABZI" && menu.rotiSabzi) {
+            setSabzi(menu.rotiSabzi.sabzi || "");
+            setHalfPrice(menu.rotiSabzi.half?.price || 50);
+            setFullPrice(menu.rotiSabzi.full?.price || 80);
+            setFreeAddons(menu.rotiSabzi.freeAddons || []);
+
+            // Try to extract full addon from items
+            const fullItems = menu.rotiSabzi.full?.items || [];
+            const addonItem = fullItems.find(
+              (item) => !item.includes("Chapati") && !item.includes("Sabzi")
+            );
+            if (addonItem) {
+              if (FULL_ADDON_SUGGESTIONS.includes(addonItem)) {
+                setFullAddon(addonItem);
+                setCustomFullAddon("");
+                setShowCustomAddon(false);
+              } else {
+                setFullAddon("");
+                setCustomFullAddon(addonItem);
+                setShowCustomAddon(true);
+              }
+            }
+          } else if (menu.type === "OTHER" && menu.other) {
+            setOtherName(menu.other.name || "");
+            setOtherPrice(menu.other.price || "");
+            setShowOtherInput(!OTHER_SUGGESTIONS.includes(menu.other.name));
+          }
+
+          setExtras(
+            menu.extras?.length > 0 ? menu.extras : [{ name: "Roti", price: 7 }]
+          );
+        } else {
+          // Reset to defaults if no menu exists
+          setType("");
+          setSabzi("");
+          setHalfPrice(50);
+          setFullPrice(80);
+          setFullAddon("");
+          setCustomFullAddon("");
+          setShowCustomAddon(false);
+          setFreeAddons([]);
+          setOtherName("");
+          setOtherPrice("");
+          setShowOtherInput(false);
+          setExtras([{ name: "Roti", price: 7 }]);
+        }
+      };
+
+      loadMenu();
+    }
+  }, [date, editingSlot, viewMode]);
 
   const toggleFreeAddon = (addon) => {
     setFreeAddons((prev) =>
@@ -107,33 +186,165 @@ export default function Menu() {
       { merge: true }
     );
 
+    // Refresh today's menu data and go back to summary view
+    const todayKey = getTodayKey();
+    const menuData = await getMenuForDate(todayKey);
+    setTodayMenuData(menuData);
+    setViewMode("summary");
+    setEditingSlot(null);
+
     alert(`${mealSlot === "lunch" ? "Lunch" : "Dinner"} menu saved`);
   };
 
+  const startEditing = (slot) => {
+    setEditingSlot(slot);
+    setMealSlot(slot);
+    setDate(getTodayKey());
+    setViewMode("edit");
+  };
+
+  const cancelEditing = () => {
+    setViewMode("summary");
+    setEditingSlot(null);
+  };
+
+  // Helper function to get menu summary
+  const getMenuSummary = (slot) => {
+    if (!todayMenuData || !todayMenuData[slot]) return null;
+
+    const menu = todayMenuData[slot];
+    if (menu.type === "ROTI_SABZI" && menu.rotiSabzi) {
+      const sabzi = menu.rotiSabzi.sabzi;
+      const fullItems = menu.rotiSabzi.full?.items || [];
+      const addon = fullItems.find(
+        (item) => !item.includes("Chapati") && !item.includes("Sabzi")
+      );
+      return {
+        type: "Roti – Sabzi",
+        main: `${sabzi} Sabzi`,
+        addon: addon ? `+ ${addon}` : "",
+        price: `₹${menu.rotiSabzi.full?.price || 0}`,
+      };
+    } else if (menu.type === "OTHER" && menu.other) {
+      return {
+        type: "Other",
+        main: menu.other.name,
+        addon: "",
+        price: `₹${menu.other.price || 0}`,
+      };
+    }
+    return null;
+  };
+
+  if (viewMode === "summary") {
+    return (
+      <div className="pb-24">
+        <PageHeader name="Today's Menu" />
+
+        <div className="space-y-4">
+          {/* Lunch Card */}
+          {getMenuSummary("lunch") ? (
+            <div className="bg-white p-4 rounded-xl shadow-sm">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold text-lg">Lunch Menu</h3>
+                <button
+                  onClick={() => startEditing("lunch")}
+                  className="text-blue-600 p-1"
+                >
+                  ✏️
+                </button>
+              </div>
+              <div className="text-gray-700">
+                <p className="font-medium">{getMenuSummary("lunch").main}</p>
+                {getMenuSummary("lunch").addon && (
+                  <p className="text-sm text-gray-600">
+                    {getMenuSummary("lunch").addon}
+                  </p>
+                )}
+                <p className="text-sm font-medium text-green-600 mt-1">
+                  Full: {getMenuSummary("lunch").price}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-300">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-700">
+                    Lunch Menu
+                  </h3>
+                  <p className="text-gray-500 text-sm">Not set yet</p>
+                </div>
+                <button
+                  onClick={() => startEditing("lunch")}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
+                >
+                  Set Menu
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Dinner Card */}
+          {getMenuSummary("dinner") ? (
+            <div className="bg-white p-4 rounded-xl shadow-sm">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold text-lg">Dinner Menu</h3>
+                <button
+                  onClick={() => startEditing("dinner")}
+                  className="text-blue-600 p-1"
+                >
+                  ✏️
+                </button>
+              </div>
+              <div className="text-gray-700">
+                <p className="font-medium">{getMenuSummary("dinner").main}</p>
+                {getMenuSummary("dinner").addon && (
+                  <p className="text-sm text-gray-600">
+                    {getMenuSummary("dinner").addon}
+                  </p>
+                )}
+                <p className="text-sm font-medium text-green-600 mt-1">
+                  Full: {getMenuSummary("dinner").price}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-300">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-700">
+                    Dinner Menu
+                  </h3>
+                  <p className="text-gray-500 text-sm">Not set yet</p>
+                </div>
+                <button
+                  onClick={() => startEditing("dinner")}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
+                >
+                  Set Menu
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Edit mode
   return (
     <div className="pb-24">
-      <PageHeader name="Today's Menu" />
-
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        className="border p-2 rounded-lg w-full mb-4"
-      />
-
-      {/* 🔹 NEW: Lunch / Dinner selector */}
-      <div className="flex gap-3 mb-4">
-        {["lunch", "dinner"].map((slot) => (
-          <button
-            key={slot}
-            onClick={() => setMealSlot(slot)}
-            className={`flex-1 py-2 rounded-lg ${
-              mealSlot === slot ? "bg-black text-white" : "bg-gray-100"
-            }`}
-          >
-            {slot === "lunch" ? "Lunch" : "Dinner"}
-          </button>
-        ))}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={cancelEditing}
+          className="text-blue-600 flex items-center gap-2"
+        >
+          ← Back to Summary
+        </button>
+        <h2 className="font-semibold text-lg">
+          Edit {mealSlot === "lunch" ? "Lunch" : "Dinner"} Menu
+        </h2>
       </div>
 
       {/* Meal Type */}

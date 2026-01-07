@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { db } from "../../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { getTodayKey, getCurrentMealSlot } from "../../services/menuService";
+import { getTodayKey } from "../../services/menuService";
 import { placeStudentOrder } from "../../services/orderService";
 import { useAuthUser } from "../../hooks/useAuthUser";
 import { useNavigate } from "react-router-dom";
-import { collection, query, where, getDocs } from "firebase/firestore";
 
 export default function PlaceOrder() {
   const navigate = useNavigate();
@@ -13,45 +12,38 @@ export default function PlaceOrder() {
 
   const [menu, setMenu] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [existingOrders, setExistingOrders] = useState([]);
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [extrasQty, setExtrasQty] = useState({});
 
-  const currentMealSlot = getCurrentMealSlot(); // "lunch" | "dinner"
+  const currentHour = new Date().getHours();
 
-  // Determine which meal slot to show menu for
+  /* ---------------- TIME RULES ---------------- */
+
+  // Menu visibility
   const mealSlotToShow = useMemo(() => {
-    const hasCurrentOrder = existingOrders.some(
-      (o) => o.mealType.toLowerCase() === currentMealSlot
-    );
-    return hasCurrentOrder
-      ? currentMealSlot === "lunch"
-        ? "dinner"
-        : "lunch"
-      : currentMealSlot;
-  }, [existingOrders, currentMealSlot]);
+    if (currentHour < 14) return "lunch"; // before 2 PM
+    if (currentHour < 21) return "dinner"; // 2 PM – 9 PM
+    return null; // after 9 PM
+  }, [currentHour]);
+
+  // Order allowed
+  const canPlaceOrder = useMemo(() => {
+    if (mealSlotToShow === "lunch") return currentHour < 13; // till 1 PM
+    if (mealSlotToShow === "dinner") return currentHour < 20; // till 8 PM
+    return false;
+  }, [mealSlotToShow, currentHour]);
+
+  /* ---------------- FETCH MENU ---------------- */
 
   useEffect(() => {
-    if (!authUser) return;
+    if (!mealSlotToShow) {
+      setMenu(null);
+      setLoading(false);
+      return;
+    }
 
-    const fetchExistingOrders = async () => {
-      const q = query(
-        collection(db, "orders"),
-        where("studentId", "==", authUser.uid),
-        where("date", "==", getTodayKey())
-      );
-
-      const snap = await getDocs(q);
-      const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setExistingOrders(orders);
-    };
-
-    fetchExistingOrders();
-  }, [authUser]);
-
-  useEffect(() => {
     const fetchMenu = async () => {
       const snap = await getDoc(doc(db, "menus", getTodayKey()));
 
@@ -60,11 +52,14 @@ export default function PlaceOrder() {
       } else {
         setMenu(null);
       }
+
       setLoading(false);
     };
 
     fetchMenu();
   }, [mealSlotToShow]);
+
+  /* ---------------- HANDLERS ---------------- */
 
   const handleSelectItem = (item) => {
     setSelectedItem(item);
@@ -94,11 +89,11 @@ export default function PlaceOrder() {
   }, [selectedItem, quantity, extrasQty, menu]);
 
   const handlePlaceOrder = async () => {
-    if (!selectedItem) return;
+    if (!selectedItem || !canPlaceOrder) return;
 
-    const orderId = await placeStudentOrder({
+    await placeStudentOrder({
       studentId: authUser.uid,
-      mealType: mealSlotToShow.toUpperCase(), // LUNCH | DINNER
+      mealType: mealSlotToShow.toUpperCase(),
       items: {
         item: selectedItem.label,
         unitPrice: selectedItem.price,
@@ -107,15 +102,10 @@ export default function PlaceOrder() {
       },
     });
 
-    // Fetch the newly created order to update the state
-    const orderSnap = await getDoc(doc(db, "orders", orderId));
-    if (orderSnap.exists()) {
-      const newOrder = { id: orderSnap.id, ...orderSnap.data() };
-      setExistingOrders((prev) => [...prev, newOrder]);
-    }
-
     navigate("/history");
   };
+
+  /* ---------------- STATES ---------------- */
 
   if (loading) {
     return <p className="text-center mt-10">Loading menu...</p>;
@@ -123,13 +113,25 @@ export default function PlaceOrder() {
 
   if (!menu) {
     return (
-      <p className="text-center text-gray-500 mt-10">
-        {mealSlotToShow === "lunch"
-          ? "Lunch menu not available"
-          : "Dinner menu not available"}
-      </p>
+      <div className="text-center text-gray-500 mt-10 px-4">
+        <p className="mb-4">
+          {mealSlotToShow
+            ? `${
+                mealSlotToShow === "lunch" ? "Lunch" : "Dinner"
+              } menu not available`
+            : "Kitchen closed for today"}
+        </p>
+
+        {!canPlaceOrder && (
+          <p className="text-sm text-red-600">
+            Stopped taking orders. Try calling Mavshi for urgent request
+          </p>
+        )}
+      </div>
     );
   }
+
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="pb-32">
@@ -234,14 +236,22 @@ export default function PlaceOrder() {
         </div>
 
         <button
-          disabled={!selectedItem}
+          disabled={!selectedItem || !canPlaceOrder}
           onClick={handlePlaceOrder}
           className={`w-full py-3 rounded-xl text-white ${
-            selectedItem ? "bg-green-600" : "bg-gray-400"
+            selectedItem && canPlaceOrder
+              ? "bg-green-600"
+              : "bg-gray-400 cursor-not-allowed"
           }`}
         >
-          Place Order
+          {canPlaceOrder ? "Place Order" : "Orders Closed"}
         </button>
+
+        {!canPlaceOrder && (
+          <p className="text-center text-xs text-red-600 mt-2">
+            Stopped taking orders. Try calling Mavshi for urgent request
+          </p>
+        )}
       </div>
     </div>
   );
