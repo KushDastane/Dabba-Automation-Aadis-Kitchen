@@ -10,7 +10,7 @@ export default function Khata() {
   const { authUser } = useAuthUser();
 
   const [loading, setLoading] = useState(true);
-  const [balance, setBalance] = useState(0);
+  const [summary, setSummary] = useState(null);
   const [ledger, setLedger] = useState([]);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function Khata() {
       setLoading(true);
       try {
         const bal = await getStudentBalance(authUser.uid);
-        setBalance(bal);
+        setSummary(bal);
 
         const entries = await getStudentLedger(authUser.uid);
         setLedger(entries);
@@ -45,7 +45,12 @@ export default function Khata() {
       {/* Balance */}
       <div className="bg-black text-white rounded-xl p-4 mb-4">
         <p className="text-sm opacity-80">Current Balance</p>
-        <h2 className="text-3xl font-semibold mt-1">₹ {balance}</h2>
+        <h2 className="text-3xl font-semibold mt-1">
+          ₹ {summary?.balance ?? 0}
+        </h2>
+        <p className="text-xs opacity-70 mt-1">
+          Credit: ₹{summary?.credit ?? 0} • Debit: ₹{summary?.debit ?? 0}
+        </p>
       </div>
 
       {/* Add money (UI only for now) */}
