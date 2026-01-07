@@ -10,6 +10,7 @@ import {
 import { addLedgerEntry } from "./ledgerService";
 import { notify } from "./notificationService";
 import { ADMIN_UID } from "../constants/admin";
+import { query, where, orderBy, getDocs } from "firebase/firestore";
 
 // student submits payment
 export const submitPayment = async ({ studentId, amount, slipUrl }) => {
@@ -94,4 +95,18 @@ export const rejectPayment = async (paymentId, paymentData) => {
       paymentId,
     },
   });
+};
+export const getStudentPayments = async (studentId) => {
+  const q = query(
+    collection(db, "payments"),
+    where("studentId", "==", studentId),
+    orderBy("createdAt", "desc")
+  );
+
+  const snap = await getDocs(q);
+
+  return snap.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 };

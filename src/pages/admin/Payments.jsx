@@ -12,6 +12,7 @@ import { acceptPayment, rejectPayment } from "../../services/paymentService";
 
 export default function Payments() {
   const [payments, setPayments] = useState([]);
+  const [previewSlip, setPreviewSlip] = useState(null); // modal image
 
   useEffect(() => {
     const q = query(
@@ -60,7 +61,19 @@ export default function Payments() {
         {payments.map((p) => (
           <div key={p.id} className="bg-white p-4 rounded-xl shadow-sm">
             <p className="font-medium">{p.studentName}</p>
-            <p className="text-sm text-gray-600">₹ {p.amount}</p>
+            <p className="text-sm text-gray-600 mb-2">₹ {p.amount}</p>
+
+            {/* SLIP IMAGE */}
+            {p.slipUrl ? (
+              <img
+                src={p.slipUrl}
+                alt="Payment Slip"
+                onClick={() => setPreviewSlip(p.slipUrl)}
+                className="w-full max-h-48 object-contain rounded-lg border cursor-pointer"
+              />
+            ) : (
+              <p className="text-xs text-gray-400">No slip uploaded</p>
+            )}
 
             <div className="flex gap-2 mt-3">
               <button
@@ -86,6 +99,20 @@ export default function Payments() {
           </div>
         ))}
       </div>
+
+      {/* IMAGE PREVIEW MODAL */}
+      {previewSlip && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+          onClick={() => setPreviewSlip(null)}
+        >
+          <img
+            src={previewSlip}
+            alt="Slip Preview"
+            className="max-h-[90vh] max-w-[90vw] rounded-lg"
+          />
+        </div>
+      )}
     </div>
   );
 }
