@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { db } from "../../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { getTodayKey } from "../../services/menuService";
+import { getTodayKey, getCurrentMealSlot } from "../../services/menuService";
 import { placeStudentOrder } from "../../services/orderService";
 import { useAuthUser } from "../../hooks/useAuthUser";
 
@@ -15,29 +15,34 @@ export default function PlaceOrder() {
   const [quantity, setQuantity] = useState(1);
   const [extrasQty, setExtrasQty] = useState({});
 
+  const mealSlot = getCurrentMealSlot(); // "lunch" | "dinner"
+
   useEffect(() => {
     const fetchMenu = async () => {
       const snap = await getDoc(doc(db, "menus", getTodayKey()));
-      if (snap.exists()) {
-        setMenu(snap.data());
+
+      if (snap.exists() && snap.data()[mealSlot]) {
+        setMenu(snap.data()[mealSlot]);
+      } else {
+        setMenu(null);
       }
       setLoading(false);
     };
 
     fetchMenu();
-  }, []);
+  }, [mealSlot]);
+
+  const handleSelectItem = (item) => {
+    setSelectedItem(item);
+    setQuantity(1);
+    setExtrasQty({});
+  };
 
   const updateExtraQty = (name, delta) => {
     setExtrasQty((prev) => ({
       ...prev,
       [name]: Math.max(0, (prev[name] || 0) + delta),
     }));
-  };
-
-  const handleSelectItem = (item) => {
-    setSelectedItem(item);
-    setQuantity(1);
-    setExtrasQty({});
   };
 
   const total = useMemo(() => {
@@ -59,7 +64,7 @@ export default function PlaceOrder() {
 
     await placeStudentOrder({
       studentId: authUser.uid,
-      mealType: "TODAY",
+      mealType: mealSlot.toUpperCase(), // LUNCH | DINNER
       items: {
         item: selectedItem.label,
         unitPrice: selectedItem.price,
@@ -71,12 +76,23 @@ export default function PlaceOrder() {
     alert("Order placed");
   };
 
-  if (loading) return <p>Loading menu...</p>;
-  if (!menu) return <p>No menu today</p>;
+  if (loading) {
+    return <p className="text-center mt-10">Loading menu...</p>;
+  }
+
+  if (!menu) {
+    return (
+      <p className="text-center text-gray-500 mt-10">
+        {mealSlot === "lunch"
+          ? "Lunch menu not available"
+          : "Dinner menu not available"}
+      </p>
+    );
+  }
 
   return (
     <div className="pb-32">
-      <h2 className="text-xl font-semibold mb-4">Today’s Menu</h2>
+      <h2 className="text-xl font-semibold mb-4 capitalize">{mealSlot} Menu</h2>
 
       {/* ROTI SABZI */}
       {menu.type === "ROTI_SABZI" && (
@@ -165,7 +181,7 @@ export default function PlaceOrder() {
         </div>
       )}
 
-      {/* TOTAL + ACTION */}
+      {/* TOTAL + PLACE ORDER */}
       <div className="fixed bottom-16 left-0 right-0 px-4">
         <div className="bg-white border rounded-xl p-4 mb-2">
           <div className="flex justify-between font-semibold">
@@ -188,7 +204,7 @@ export default function PlaceOrder() {
   );
 }
 
-/* ---------------- COMPONENT ---------------- */
+/* ---------------- MENU CARD ---------------- */
 
 function MenuCard({
   title,

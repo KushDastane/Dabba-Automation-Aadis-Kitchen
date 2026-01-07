@@ -9,6 +9,9 @@ const FULL_ADDON_SUGGESTIONS = ["Dal Rice", "Kadhi Rice", "Biryani"];
 const FREE_ADDONS = ["Chatni", "Pickle", "Dahi", "Sweet"];
 
 export default function Menu() {
+  // 🔹 NEW (meal slot)
+  const [mealSlot, setMealSlot] = useState("lunch"); // lunch | dinner
+
   const [date, setDate] = useState(getTodayKey());
   const [type, setType] = useState(""); // ROTI_SABZI | OTHER
 
@@ -94,8 +97,17 @@ export default function Menu() {
       };
     }
 
-    await setDoc(doc(db, "menus", date), payload, { merge: true });
-    alert("Menu saved");
+    // 🔹 CHANGED: save under lunch/dinner
+    await setDoc(
+      doc(db, "menus", date),
+      {
+        [mealSlot]: payload,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    alert(`${mealSlot === "lunch" ? "Lunch" : "Dinner"} menu saved`);
   };
 
   return (
@@ -108,6 +120,21 @@ export default function Menu() {
         onChange={(e) => setDate(e.target.value)}
         className="border p-2 rounded-lg w-full mb-4"
       />
+
+      {/* 🔹 NEW: Lunch / Dinner selector */}
+      <div className="flex gap-3 mb-4">
+        {["lunch", "dinner"].map((slot) => (
+          <button
+            key={slot}
+            onClick={() => setMealSlot(slot)}
+            className={`flex-1 py-2 rounded-lg ${
+              mealSlot === slot ? "bg-black text-white" : "bg-gray-100"
+            }`}
+          >
+            {slot === "lunch" ? "Lunch" : "Dinner"}
+          </button>
+        ))}
+      </div>
 
       {/* Meal Type */}
       <div className="flex gap-3 mb-4">
@@ -307,7 +334,7 @@ export default function Menu() {
           onClick={saveMenu}
           className="w-full bg-green-600 text-white py-3 rounded-xl"
         >
-          Save Menu
+          Save {mealSlot === "lunch" ? "Lunch" : "Dinner"} Menu
         </button>
       </div>
     </div>
