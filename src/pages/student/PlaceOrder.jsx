@@ -5,6 +5,7 @@ import { getTodayKey } from "../../services/menuService";
 import { placeStudentOrder } from "../../services/orderService";
 import { useAuthUser } from "../../hooks/useAuthUser";
 import { useNavigate } from "react-router-dom";
+import { FiCheck } from "react-icons/fi";
 
 export default function PlaceOrder() {
   const navigate = useNavigate();
@@ -21,17 +22,15 @@ export default function PlaceOrder() {
 
   /* ---------------- TIME RULES ---------------- */
 
-  // Menu visibility
   const mealSlotToShow = useMemo(() => {
-    if (currentHour < 14) return "lunch"; // before 2 PM
-    if (currentHour < 21) return "dinner"; // 2 PM – 9 PM
-    return null; // after 9 PM
+    if (currentHour < 14) return "lunch";
+    if (currentHour < 21) return "dinner";
+    return null;
   }, [currentHour]);
 
-  // Order allowed
   const canPlaceOrder = useMemo(() => {
-    if (mealSlotToShow === "lunch") return currentHour < 13; // till 1 PM
-    if (mealSlotToShow === "dinner") return currentHour < 20; // till 8 PM
+    if (mealSlotToShow === "lunch") return currentHour < 13;
+    if (mealSlotToShow === "dinner") return currentHour < 20;
     return false;
   }, [mealSlotToShow, currentHour]);
 
@@ -46,13 +45,11 @@ export default function PlaceOrder() {
 
     const fetchMenu = async () => {
       const snap = await getDoc(doc(db, "menus", getTodayKey()));
-
       if (snap.exists() && snap.data()[mealSlotToShow]) {
         setMenu(snap.data()[mealSlotToShow]);
       } else {
         setMenu(null);
       }
-
       setLoading(false);
     };
 
@@ -78,13 +75,11 @@ export default function PlaceOrder() {
     if (!selectedItem) return 0;
 
     let sum = selectedItem.price * quantity;
-
     if (menu?.extras) {
       menu.extras.forEach((e) => {
         sum += (extrasQty[e.name] || 0) * e.price;
       });
     }
-
     return sum;
   }, [selectedItem, quantity, extrasQty, menu]);
 
@@ -113,12 +108,10 @@ export default function PlaceOrder() {
 
   if (!menu) {
     return (
-      <div className="text-center text-gray-500 mt-10 px-4">
-        <p className="mb-4">
+      <div className="text-center text-gray-500 mt-16 px-4">
+        <p className="mb-3 text-lg font-medium">
           {mealSlotToShow
-            ? `${
-                mealSlotToShow === "lunch" ? "Lunch" : "Dinner"
-              } menu not available`
+            ? `${mealSlotToShow === "lunch" ? "Lunch" : "Dinner"} not available`
             : "Kitchen closed for today"}
         </p>
 
@@ -134,114 +127,135 @@ export default function PlaceOrder() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="pb-32">
-      <h2 className="text-xl font-semibold mb-4 capitalize">
-        {mealSlotToShow} Menu
-      </h2>
+    <div className="pb-36 bg-[#faf9f6] min-h-screen">
+      {/* HEADER */}
+      <div className="px-4 pt-4 mb-4">
+        <p className="text-xs text-gray-500 mb-1">
+          Today • {mealSlotToShow?.toUpperCase()}
+        </p>
+        <h2 className="text-xl font-semibold">Build Your Thali</h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Choose one option to continue
+        </p>
 
-      {/* ROTI SABZI */}
-      {menu.type === "ROTI_SABZI" && (
-        <>
+        {!canPlaceOrder && (
+          <p className="text-xs text-red-600 mt-1">
+            Orders closed for this slot
+          </p>
+        )}
+      </div>
+
+      {/* MAIN MENU */}
+      <div className="space-y-4 px-4">
+        {menu.type === "ROTI_SABZI" && (
+          <>
+            <MenuCard
+              title="Half Dabba"
+              description={menu.rotiSabzi.half.items.join(" • ")}
+              price={menu.rotiSabzi.half.price}
+              selected={selectedItem?.key === "half"}
+              quantity={quantity}
+              onSelect={() =>
+                handleSelectItem({
+                  key: "half",
+                  label: "Half Dabba",
+                  price: menu.rotiSabzi.half.price,
+                })
+              }
+              onQtyChange={setQuantity}
+            />
+
+            <MenuCard
+              title="Full Dabba"
+              description={menu.rotiSabzi.full.items.join(" • ")}
+              price={menu.rotiSabzi.full.price}
+              selected={selectedItem?.key === "full"}
+              quantity={quantity}
+              onSelect={() =>
+                handleSelectItem({
+                  key: "full",
+                  label: "Full Dabba",
+                  price: menu.rotiSabzi.full.price,
+                })
+              }
+              onQtyChange={setQuantity}
+            />
+          </>
+        )}
+
+        {menu.type === "OTHER" && (
           <MenuCard
-            title="Half Dabba"
-            description={menu.rotiSabzi.half.items.join(" + ")}
-            price={menu.rotiSabzi.half.price}
-            selected={selectedItem?.key === "half"}
+            title={menu.other.name}
+            price={menu.other.price}
+            selected={selectedItem?.key === "other"}
             quantity={quantity}
             onSelect={() =>
               handleSelectItem({
-                key: "half",
-                label: "Half Dabba",
-                price: menu.rotiSabzi.half.price,
+                key: "other",
+                label: menu.other.name,
+                price: menu.other.price,
               })
             }
             onQtyChange={setQuantity}
           />
-
-          <MenuCard
-            title="Full Dabba"
-            description={menu.rotiSabzi.full.items.join(" + ")}
-            price={menu.rotiSabzi.full.price}
-            selected={selectedItem?.key === "full"}
-            quantity={quantity}
-            onSelect={() =>
-              handleSelectItem({
-                key: "full",
-                label: "Full Dabba",
-                price: menu.rotiSabzi.full.price,
-              })
-            }
-            onQtyChange={setQuantity}
-          />
-        </>
-      )}
-
-      {/* OTHER */}
-      {menu.type === "OTHER" && (
-        <MenuCard
-          title={menu.other.name}
-          price={menu.other.price}
-          selected={selectedItem?.key === "other"}
-          quantity={quantity}
-          onSelect={() =>
-            handleSelectItem({
-              key: "other",
-              label: menu.other.name,
-              price: menu.other.price,
-            })
-          }
-          onQtyChange={setQuantity}
-        />
-      )}
+        )}
+      </div>
 
       {/* EXTRAS */}
       {menu.extras?.length > 0 && selectedItem && (
-        <div className="mt-6">
-          <h3 className="font-medium mb-2">Extras</h3>
-          {menu.extras.map((e) => (
-            <div
-              key={e.name}
-              className="flex justify-between items-center mb-2"
-            >
-              <span>
-                {e.name} – ₹{e.price}
-              </span>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => updateExtraQty(e.name, -1)}
-                  className="px-3 py-1 bg-gray-200 rounded"
-                >
-                  −
-                </button>
-                <span>{extrasQty[e.name] || 0}</span>
-                <button
-                  onClick={() => updateExtraQty(e.name, 1)}
-                  className="px-3 py-1 bg-gray-200 rounded"
-                >
-                  +
-                </button>
+        <div className="mt-6 px-4">
+          <h3 className="text-sm font-medium mb-3 text-gray-700">
+            Add-ons (Optional)
+          </h3>
+
+          <div className="space-y-3">
+            {menu.extras.map((e) => (
+              <div
+                key={e.name}
+                className="bg-white rounded-xl px-4 py-3 flex justify-between items-center shadow-sm"
+              >
+                <div>
+                  <p className="font-medium">{e.name}</p>
+                  <p className="text-xs text-gray-500">₹{e.price}</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => updateExtraQty(e.name, -1)}
+                    className="w-8 h-8 rounded-full bg-gray-100"
+                  >
+                    −
+                  </button>
+                  <span className="font-medium">{extrasQty[e.name] || 0}</span>
+                  <button
+                    onClick={() => updateExtraQty(e.name, 1)}
+                    className="w-8 h-8 rounded-full bg-gray-100"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
-      {/* TOTAL + PLACE ORDER */}
+      {/* BOTTOM BAR */}
       <div className="fixed bottom-16 left-0 right-0 px-4">
-        <div className="bg-white border rounded-xl p-4 mb-2">
-          <div className="flex justify-between font-semibold">
-            <span>Total</span>
-            <span>₹{total}</span>
+        <div className="bg-white rounded-2xl shadow-lg p-4 mb-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500">Total Amount</span>
+            <span className="text-xl font-semibold">₹{total}</span>
           </div>
         </div>
 
         <button
           disabled={!selectedItem || !canPlaceOrder}
           onClick={handlePlaceOrder}
-          className={`w-full py-3 rounded-xl text-white ${
+          className={`w-full py-3 rounded-xl font-medium flex justify-center items-center gap-2 ${
             selectedItem && canPlaceOrder
-              ? "bg-green-600"
-              : "bg-gray-400 cursor-not-allowed"
+              ? "bg-yellow-400 text-black"
+              : "bg-gray-300 text-gray-600 cursor-not-allowed"
           }`}
         >
           {canPlaceOrder ? "Place Order" : "Orders Closed"}
@@ -249,7 +263,7 @@ export default function PlaceOrder() {
 
         {!canPlaceOrder && (
           <p className="text-center text-xs text-red-600 mt-2">
-            Stopped taking orders. Try calling Mavshi for urgent request
+            Try calling Mavshi for urgent request
           </p>
         )}
       </div>
@@ -271,38 +285,54 @@ function MenuCard({
   return (
     <div
       onClick={onSelect}
-      className={`p-4 rounded-xl border mb-3 transition ${
-        selected ? "border-black bg-gray-50" : "border-gray-200"
-      }`}
+      className={`relative bg-white rounded-2xl p-4 cursor-pointer transition-all
+        ${
+          selected
+            ? "ring-2 ring-yellow-400 shadow-md"
+            : "border border-gray-200 hover:shadow-md"
+        }`}
     >
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="font-medium">{title}</h3>
-          {description && (
-            <p className="text-sm text-gray-500">{description}</p>
-          )}
+      {/* RADIO INDICATOR */}
+      <div className="absolute top-4 right-4">
+        <div
+          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
+            ${
+              selected ? "border-yellow-400 bg-yellow-400" : "border-gray-300"
+            }`}
+        >
+          {selected && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
         </div>
-        <p className="font-semibold">₹{price}</p>
       </div>
 
+      <div className="pr-10">
+        <p className="font-semibold text-base">{title}</p>
+        {description && (
+          <p className="text-sm text-gray-500 mt-1">{description}</p>
+        )}
+        <p className="mt-2 text-lg font-semibold">₹{price}</p>
+      </div>
+
+      {/* QUANTITY ONLY AFTER SELECTION */}
       {selected && (
-        <div className="flex justify-end items-center gap-4 mt-3">
+        <div className="flex justify-end items-center gap-4 mt-4">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onQtyChange((q) => Math.max(1, q - 1));
             }}
-            className="px-3 py-1 bg-gray-200 rounded"
+            className="w-9 h-9 rounded-full bg-gray-100 text-lg"
           >
             −
           </button>
+
           <span className="font-semibold">{quantity}</span>
+
           <button
             onClick={(e) => {
               e.stopPropagation();
               onQtyChange((q) => q + 1);
             }}
-            className="px-3 py-1 bg-gray-200 rounded"
+            className="w-9 h-9 rounded-full bg-gray-100 text-lg"
           >
             +
           </button>

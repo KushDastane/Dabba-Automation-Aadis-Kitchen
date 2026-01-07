@@ -105,7 +105,9 @@ export default function StudentOrders() {
   /* ---------------- STATS (SAFE) ---------------- */
 
   const monthlyOrders = orders.filter(
-    (o) => sameMonth(o.createdAt) && o.status !== "CANCELLED"
+    (o) =>
+      sameMonth(o.createdAt) &&
+      (o.status === "CONFIRMED" || o.status === "DELIVERED")
   );
 
   const totalExpense = monthlyOrders.reduce((sum, o) => {
