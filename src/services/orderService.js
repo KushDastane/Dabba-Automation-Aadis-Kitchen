@@ -19,6 +19,7 @@ import { ADMIN_UID } from "../constants/admin";
 export const placeStudentOrder = async ({ studentId, mealType, items }) => {
   const dateKey = getTodayKey();
 
+  // ✅ ORDER CREATION (matches Firestore rules perfectly)
   const orderRef = await addDoc(collection(db, "orders"), {
     studentId,
     date: dateKey,
@@ -30,7 +31,7 @@ export const placeStudentOrder = async ({ studentId, mealType, items }) => {
     createdBy: "student",
   });
 
-  // 🔹 Fetch student name for better admin notification
+  // 🔹 Fetch student name (non-critical)
   let studentName = "Student";
   try {
     const userSnap = await getDoc(doc(db, "users", studentId));
@@ -41,25 +42,30 @@ export const placeStudentOrder = async ({ studentId, mealType, items }) => {
     console.error("Failed to fetch student name", err);
   }
 
-  await notify({
-    userId: ADMIN_UID,
-    role: "admin",
-    type: "ORDER_PLACED",
-    title: "New Order Placed",
-    message: `${studentName} placed a new order.`,
-    data: {
-      orderId: orderRef.id,
-      studentId,
-      studentName,
-      mealType,
-    },
-  });
+  // 🔹 ADMIN notification (must NEVER block order placement)
+  try {
+    await notify({
+      userId: ADMIN_UID, // ⚠ must match rules exactly
+      role: "admin",
+      type: "ORDER_PLACED",
+      title: "New Order Placed",
+      message: `${studentName} placed a new order.`,
+      data: {
+        orderId: orderRef.id,
+        studentId,
+        studentName,
+        mealType,
+      },
+    });
+  } catch (err) {
+    console.error("Notification failed (order still placed)", err);
+  }
 
   return orderRef.id;
 };
 
 /**
- * STUDENT: Get today’s order (used by dashboard & order screen)
+ * STUDENT: Get today’s order
  */
 export const getTodayStudentOrder = async (studentId) => {
   const dateKey = getTodayKey();
