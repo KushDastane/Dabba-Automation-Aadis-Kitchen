@@ -13,17 +13,30 @@ export default function PlaceOrder() {
 
   const [menu, setMenu] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [existingOrders, setExistingOrders] = useState([]);
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [extrasQty, setExtrasQty] = useState({});
 
-  const mealSlot = getCurrentMealSlot(); // "lunch" | "dinner"
+  const currentMealSlot = getCurrentMealSlot(); // "lunch" | "dinner"
+
+  // Determine which meal slot to show menu for
+  const mealSlotToShow = useMemo(() => {
+    const hasCurrentOrder = existingOrders.some(
+      (o) => o.mealType.toLowerCase() === currentMealSlot
+    );
+    return hasCurrentOrder
+      ? currentMealSlot === "lunch"
+        ? "dinner"
+        : "lunch"
+      : currentMealSlot;
+  }, [existingOrders, currentMealSlot]);
 
   useEffect(() => {
     if (!authUser) return;
 
-    const checkExistingOrder = async () => {
+    const fetchExistingOrders = async () => {
       const q = query(
         collection(db, "orders"),
         where("studentId", "==", authUser.uid),
@@ -31,20 +44,19 @@ export default function PlaceOrder() {
       );
 
       const snap = await getDocs(q);
-      if (!snap.empty) {
-        navigate("/student/orders");
-      }
+      const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setExistingOrders(orders);
     };
 
-    checkExistingOrder();
+    fetchExistingOrders();
   }, [authUser]);
 
   useEffect(() => {
     const fetchMenu = async () => {
       const snap = await getDoc(doc(db, "menus", getTodayKey()));
 
-      if (snap.exists() && snap.data()[mealSlot]) {
-        setMenu(snap.data()[mealSlot]);
+      if (snap.exists() && snap.data()[mealSlotToShow]) {
+        setMenu(snap.data()[mealSlotToShow]);
       } else {
         setMenu(null);
       }
@@ -52,7 +64,7 @@ export default function PlaceOrder() {
     };
 
     fetchMenu();
-  }, [mealSlot]);
+  }, [mealSlotToShow]);
 
   const handleSelectItem = (item) => {
     setSelectedItem(item);
@@ -84,9 +96,9 @@ export default function PlaceOrder() {
   const handlePlaceOrder = async () => {
     if (!selectedItem) return;
 
-    await placeStudentOrder({
+    const orderId = await placeStudentOrder({
       studentId: authUser.uid,
-      mealType: mealSlot.toUpperCase(), // LUNCH | DINNER
+      mealType: mealSlotToShow.toUpperCase(), // LUNCH | DINNER
       items: {
         item: selectedItem.label,
         unitPrice: selectedItem.price,
@@ -95,7 +107,14 @@ export default function PlaceOrder() {
       },
     });
 
-    navigate("/student/orders");
+    // Fetch the newly created order to update the state
+    const orderSnap = await getDoc(doc(db, "orders", orderId));
+    if (orderSnap.exists()) {
+      const newOrder = { id: orderSnap.id, ...orderSnap.data() };
+      setExistingOrders((prev) => [...prev, newOrder]);
+    }
+
+    navigate("/history");
   };
 
   if (loading) {
@@ -105,7 +124,7 @@ export default function PlaceOrder() {
   if (!menu) {
     return (
       <p className="text-center text-gray-500 mt-10">
-        {mealSlot === "lunch"
+        {mealSlotToShow === "lunch"
           ? "Lunch menu not available"
           : "Dinner menu not available"}
       </p>
@@ -114,7 +133,9 @@ export default function PlaceOrder() {
 
   return (
     <div className="pb-32">
-      <h2 className="text-xl font-semibold mb-4 capitalize">{mealSlot} Menu</h2>
+      <h2 className="text-xl font-semibold mb-4 capitalize">
+        {mealSlotToShow} Menu
+      </h2>
 
       {/* ROTI SABZI */}
       {menu.type === "ROTI_SABZI" && (
