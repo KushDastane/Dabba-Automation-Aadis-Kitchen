@@ -8,6 +8,7 @@ import {
   query,
   where,
   getDocs,
+  updateDoc,
 } from "firebase/firestore";
 import { getTodayKey } from "./menuService";
 import { notify } from "./notificationService";
@@ -84,4 +85,13 @@ export const getTodayStudentOrder = async (studentId) => {
     id: snap.docs[0].id,
     ...snap.docs[0].data(),
   };
+};
+
+export const confirmOrder = async (orderId) => {
+  const orderRef = doc(db, "orders", orderId);
+
+  await updateDoc(orderRef, {
+    status: "CONFIRMED",
+    confirmedAt: serverTimestamp(),
+  });
 };

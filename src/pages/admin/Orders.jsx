@@ -3,6 +3,7 @@ import { listenToTodayOrders } from "../../services/adminOrderService";
 import { getTodayKey } from "../../services/menuService";
 import { db } from "../../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { confirmOrder } from "../../services/orderService";
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
@@ -67,8 +68,23 @@ export default function Orders() {
                 )}
               </div>
 
-              <button className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">
-                Confirm
+              <button
+                disabled={o.status === "CONFIRMED"}
+                onClick={async () => {
+                  try {
+                    await confirmOrder(o.id);
+                  } catch (err) {
+                    alert("Failed to confirm order");
+                    console.error(err);
+                  }
+                }}
+                className={`px-3 py-1 rounded-lg text-sm text-white ${
+                  o.status === "CONFIRMED"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600"
+                }`}
+              >
+                {o.status === "CONFIRMED" ? "Confirmed" : "Confirm"}
               </button>
             </div>
           </div>
