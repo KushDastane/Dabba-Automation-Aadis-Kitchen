@@ -5,10 +5,11 @@ import { useAuthUser } from "../../hooks/useAuthUser";
 import { getStudentBalance } from "../../services/balanceService";
 import { getStudentLedger } from "../../services/ledgerService";
 import { formatDate } from "../../utils/dateUtils";
+import { useNavigate } from "react-router-dom";
 
 export default function Khata() {
   const { authUser } = useAuthUser();
-
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
   const [ledger, setLedger] = useState([]);
@@ -54,7 +55,10 @@ export default function Khata() {
       </div>
 
       {/* Add money (UI only for now) */}
-      <button className="w-full bg-green-600 text-white py-3 rounded-xl mb-6">
+      <button
+        onClick={() => navigate("/add-payment")}
+        className="w-full bg-green-600 text-white py-3 rounded-xl mb-6"
+      >
         Add Money
       </button>
 

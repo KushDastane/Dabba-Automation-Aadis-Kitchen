@@ -8,6 +8,8 @@ import { confirmOrder } from "../../services/orderService";
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmingId, setConfirmingId] = useState(null);
+
 
   useEffect(() => {
     const unsub = listenToTodayOrders(getTodayKey(), async (list) => {
@@ -69,19 +71,20 @@ export default function Orders() {
               </div>
 
               <button
-                disabled={o.status === "CONFIRMED"}
+                disabled={o.status === "CONFIRMED" || confirmingId === o.id}
                 onClick={async () => {
                   try {
+                    setConfirmingId(o.id);
                     await confirmOrder(o.id);
                   } catch (err) {
                     alert("Failed to confirm order");
                     console.error(err);
+                  } finally {
+                    setConfirmingId(null);
                   }
                 }}
                 className={`px-3 py-1 rounded-lg text-sm text-white ${
-                  o.status === "CONFIRMED"
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600"
+                  o.status === "CONFIRMED" ? "bg-gray-400" : "bg-green-600"
                 }`}
               >
                 {o.status === "CONFIRMED" ? "Confirmed" : "Confirm"}

@@ -12,27 +12,28 @@ import {
 } from "firebase/firestore";
 import { getTodayKey } from "./menuService";
 import { notify } from "./notificationService";
+import { addLedgerEntry } from "./ledgerService";
 import { ADMIN_UID } from "../constants/admin";
 
-/**
- * STUDENT: Place order
- */
+/* ===========================
+   STUDENT: PLACE ORDER
+=========================== */
 export const placeStudentOrder = async ({ studentId, mealType, items }) => {
   const dateKey = getTodayKey();
 
-  // ✅ ORDER CREATION (matches Firestore rules perfectly)
+  // 1️⃣ Create order
   const orderRef = await addDoc(collection(db, "orders"), {
     studentId,
     date: dateKey,
     mealType,
-    items,
+    items, // contains unitPrice, quantity, extras
     calculatedAmount: null,
     status: "PENDING",
     createdAt: serverTimestamp(),
     createdBy: "student",
   });
 
-  // 🔹 Fetch student name (non-critical)
+  // 2️⃣ Fetch student name (non-blocking)
   let studentName = "Student";
   try {
     const userSnap = await getDoc(doc(db, "users", studentId));
@@ -43,10 +44,10 @@ export const placeStudentOrder = async ({ studentId, mealType, items }) => {
     console.error("Failed to fetch student name", err);
   }
 
-  // 🔹 ADMIN notification (must NEVER block order placement)
+  // 3️⃣ Notify admin (must not block order)
   try {
     await notify({
-      userId: ADMIN_UID, // ⚠ must match rules exactly
+      userId: ADMIN_UID,
       role: "admin",
       type: "ORDER_PLACED",
       title: "New Order Placed",
@@ -59,15 +60,15 @@ export const placeStudentOrder = async ({ studentId, mealType, items }) => {
       },
     });
   } catch (err) {
-    console.error("Notification failed (order still placed)", err);
+    console.error("Admin notification failed", err);
   }
 
   return orderRef.id;
 };
 
-/**
- * STUDENT: Get today’s order
- */
+/* ===========================
+   STUDENT: GET TODAY ORDER
+=========================== */
 export const getTodayStudentOrder = async (studentId) => {
   const dateKey = getTodayKey();
 
@@ -87,11 +88,57 @@ export const getTodayStudentOrder = async (studentId) => {
   };
 };
 
+/* ===========================
+   ADMIN: CONFIRM ORDER
+   (THIS IS THE IMPORTANT FIX)
+=========================== */
 export const confirmOrder = async (orderId) => {
   const orderRef = doc(db, "orders", orderId);
+  const snap = await getDoc(orderRef);
 
+  if (!snap.exists()) {
+    throw new Error("Order not found");
+  }
+
+  const order = snap.data();
+
+  // Safety: don’t double confirm
+  if (order.status === "CONFIRMED") {
+    return;
+  }
+
+  /* 1️⃣ CALCULATE TOTAL */
+  let total = order.items.unitPrice * order.items.quantity;
+
+  // Extras already counted in PlaceOrder UI,
+  // so NO double calculation here
+
+  /* 2️⃣ UPDATE ORDER */
   await updateDoc(orderRef, {
     status: "CONFIRMED",
+    calculatedAmount: total,
     confirmedAt: serverTimestamp(),
+  });
+
+  /* 3️⃣ CREATE LEDGER DEBIT */
+  await addLedgerEntry({
+    studentId: order.studentId,
+    type: "DEBIT",
+    source: "ORDER",
+    sourceId: orderId,
+    amount: total,
+  });
+
+  /* 4️⃣ NOTIFY STUDENT */
+  await notify({
+    userId: order.studentId,
+    role: "student",
+    type: "ORDER_CONFIRMED",
+    title: "Order Confirmed",
+    message: `Your order has been confirmed. ₹${total} added to your khata.`,
+    data: {
+      orderId,
+      amount: total,
+    },
   });
 };

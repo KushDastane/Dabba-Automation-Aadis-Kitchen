@@ -11,9 +11,10 @@ import AdminLayout from "./layouts/AdminLayout";
 // student pages
 import StudentDashboard from "./pages/student/StudentDashboard";
 import PlaceOrder from "./pages/student/PlaceOrder";
-import StudentOrders from "./pages/student/Orders"; // ✅ ADD THIS
+import StudentOrders from "./pages/student/Orders";
 import Khata from "./pages/student/Khata";
 import Profile from "./pages/student/Profile";
+import AddPayment from "./pages/student/AddPayment";
 
 // admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/history" element={<StudentOrders />} />
 
         <Route path="/khata" element={<Khata />} />
+        <Route path="/add-payment" element={<AddPayment />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
