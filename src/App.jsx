@@ -11,6 +11,7 @@ import AdminLayout from "./layouts/AdminLayout";
 // student pages
 import StudentDashboard from "./pages/student/StudentDashboard";
 import PlaceOrder from "./pages/student/PlaceOrder";
+import StudentOrders from "./pages/student/Orders"; // ✅ ADD THIS
 import Khata from "./pages/student/Khata";
 import Profile from "./pages/student/Profile";
 
@@ -27,7 +28,6 @@ export default function App() {
   if (!isAuthenticated) return <DevLogin />;
   if (!isProfileComplete) return <ProfileSetup />;
 
-  // 🔐 ADMIN ROUTES
   if (role === "admin") {
     return (
       <AdminLayout>
@@ -48,6 +48,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<StudentDashboard />} />
         <Route path="/order" element={<PlaceOrder />} />
+
+        {/* ✅ RENAMED */}
+        <Route path="/history" element={<StudentOrders />} />
+
         <Route path="/khata" element={<Khata />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" />} />

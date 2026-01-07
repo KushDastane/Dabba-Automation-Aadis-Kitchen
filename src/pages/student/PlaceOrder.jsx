@@ -4,8 +4,11 @@ import { doc, getDoc } from "firebase/firestore";
 import { getTodayKey, getCurrentMealSlot } from "../../services/menuService";
 import { placeStudentOrder } from "../../services/orderService";
 import { useAuthUser } from "../../hooks/useAuthUser";
+import { useNavigate } from "react-router-dom";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 export default function PlaceOrder() {
+  const navigate = useNavigate();
   const { authUser } = useAuthUser();
 
   const [menu, setMenu] = useState(null);
@@ -16,6 +19,25 @@ export default function PlaceOrder() {
   const [extrasQty, setExtrasQty] = useState({});
 
   const mealSlot = getCurrentMealSlot(); // "lunch" | "dinner"
+
+  useEffect(() => {
+    if (!authUser) return;
+
+    const checkExistingOrder = async () => {
+      const q = query(
+        collection(db, "orders"),
+        where("studentId", "==", authUser.uid),
+        where("date", "==", getTodayKey())
+      );
+
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        navigate("/student/orders");
+      }
+    };
+
+    checkExistingOrder();
+  }, [authUser]);
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -73,7 +95,7 @@ export default function PlaceOrder() {
       },
     });
 
-    alert("Order placed");
+    navigate("/student/orders");
   };
 
   if (loading) {

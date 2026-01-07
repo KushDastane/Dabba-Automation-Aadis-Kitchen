@@ -1,17 +1,17 @@
-import { FiPlusCircle } from "react-icons/fi";
+export default function BalanceCard({ summary }) {
+  if (!summary) return null;
 
-export default function BalanceCard({ balance = 0 }) {
+  const { credit = 0, debit = 0, balance = 0 } = summary;
+
   return (
-    <div className="bg-yellow-100 rounded-xl p-4 mb-4">
-      <p className="text-sm text-yellow-800">Current Balance</p>
+    <div className="bg-yellow-100 rounded-xl p-4">
+      <p className="text-sm text-gray-600 mb-1">Current Balance</p>
 
-      <div className="flex justify-between items-center mt-2">
-        <h2 className="text-2xl font-semibold text-yellow-900">₹ {balance}</h2>
+      <h2 className="text-2xl font-bold">₹ {balance}</h2>
 
-        <button className="flex items-center gap-1 text-sm text-yellow-900 font-medium">
-          <FiPlusCircle />
-          Add Money
-        </button>
+      <div className="flex justify-between text-xs text-gray-600 mt-2">
+        <span>Credit: ₹{credit}</span>
+        <span>Debit: ₹{debit}</span>
       </div>
     </div>
   );

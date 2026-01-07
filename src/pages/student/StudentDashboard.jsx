@@ -3,7 +3,7 @@ import { useAuthUser } from "../../hooks/useAuthUser";
 import PageHeader from "../../components/layout/PageHeader";
 import OrderStatusCard from "../../components/cards/OrderStatusCard";
 import BalanceCard from "../../components/cards/BalanceCard";
-
+import { getCurrentMealSlot } from "../../services/menuService";
 import { getStudentBalance } from "../../services/balanceService";
 import { getTodayStudentOrder } from "../../services/orderService";
 
@@ -11,8 +11,9 @@ export default function StudentDashboard() {
   const { authUser, profile } = useAuthUser();
 
   const [loading, setLoading] = useState(true);
-  const [balance, setBalance] = useState(0);
-  const [orderStatus, setOrderStatus] = useState(null);
+  const [ledgerSummary, setLedgerSummary] = useState(null);
+  const [orderStatus, setOrderStatus] = useState("Not Placed");
+  const mealSlot = getCurrentMealSlot();
 
   useEffect(() => {
     if (!authUser) return;
@@ -21,8 +22,8 @@ export default function StudentDashboard() {
       setLoading(true);
 
       try {
-        const bal = await getStudentBalance(authUser.uid);
-        setBalance(bal);
+        const summary = await getStudentBalance(authUser.uid);
+        setLedgerSummary(summary);
 
         const todayOrder = await getTodayStudentOrder(authUser.uid);
         setOrderStatus(todayOrder?.status ?? "Not Placed");
@@ -41,14 +42,17 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div>
+    <div className="pb-24">
       <PageHeader name={profile?.name} />
 
-      <OrderStatusCard meal="Today" status={orderStatus} />
+      <OrderStatusCard
+        meal={mealSlot === "lunch" ? "Lunch" : "Dinner"}
+        status={orderStatus}
+      />
 
-      <BalanceCard balance={balance} />
+      <BalanceCard summary={ledgerSummary} />
 
-      <button className="w-full bg-black text-white py-3 rounded-xl mt-2">
+      <button className="w-full bg-black text-white py-3 rounded-xl mt-3">
         Place Today’s Order
       </button>
     </div>

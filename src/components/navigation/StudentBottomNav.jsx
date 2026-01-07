@@ -1,5 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { FiHome, FiShoppingBag, FiCreditCard, FiUser } from "react-icons/fi";
+import {
+  FiHome,
+  FiShoppingBag,
+  FiClock,
+  FiCreditCard,
+  FiUser,
+} from "react-icons/fi";
 
 export default function StudentBottomNav() {
   const navigate = useNavigate();
@@ -14,18 +20,29 @@ export default function StudentBottomNav() {
           active={pathname === "/"}
           onClick={() => navigate("/")}
         />
+
         <NavItem
           icon={<FiShoppingBag size={22} />}
           label="Order"
           active={pathname === "/order"}
           onClick={() => navigate("/order")}
         />
+
+        {/* ✅ HISTORY */}
+        <NavItem
+          icon={<FiClock size={22} />}
+          label="History"
+          active={pathname === "/history"}
+          onClick={() => navigate("/history")}
+        />
+
         <NavItem
           icon={<FiCreditCard size={22} />}
           label="Khata"
           active={pathname === "/khata"}
           onClick={() => navigate("/khata")}
         />
+
         <NavItem
           icon={<FiUser size={22} />}
           label="Profile"
