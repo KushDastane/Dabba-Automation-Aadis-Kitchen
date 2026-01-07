@@ -39,6 +39,13 @@ export default function Khata() {
     return <p className="text-center mt-10">Loading khata...</p>;
   }
 
+  const getLabel = (entry) => {
+    if (entry.source === "PAYMENT") return "BALANCE";
+    if (entry.source === "ORDER") return "ORDER";
+    return entry.source;
+  };
+
+
   return (
     <div className="pb-24">
       <PageHeader name="My Khata" />
@@ -74,7 +81,7 @@ export default function Khata() {
               key={entry.id}
               type={entry.type}
               amount={entry.amount}
-              label={entry.source}
+              label={getLabel(entry)}
               date={formatDate(entry.createdAt)}
             />
           ))}
