@@ -6,6 +6,7 @@ import { placeStudentOrder } from "../../services/orderService";
 import { useAuthUser } from "../../hooks/useAuthUser";
 import { useNavigate } from "react-router-dom";
 import { FiCheck } from "react-icons/fi";
+import ClosedImg from "../../../public/closed.png";
 
 function MenuCard({
   title,
@@ -178,22 +179,28 @@ export default function PlaceOrder() {
 
   if (!menu) {
     return (
-      <div className="text-center text-gray-500 mt-16 px-4">
-        <p className="mb-3 text-lg font-medium">
-          {mealSlotToShow
-            ? `${mealSlotToShow === "lunch" ? "Lunch" : "Dinner"} not available`
-            : "Kitchen closed for today"}
+      <div className="flex flex-col items-center justify-center mt-24 px-6 text-center">
+        {/* IMAGE */}
+        <img
+          src={ClosedImg}
+          alt="Kitchen Closed"
+          className="md:w-50 w-70 max-w-full mb-6 opacity-90"
+        />
+
+        {/* MAIN TEXT */}
+        <p className="text-xl font-semibold text-gray-800 mb-2">
+          <span className="text-yellow-700">Oops,</span> we are closed
         </p>
 
-        {!canPlaceOrder && (
-          <p className="text-sm text-red-600">
-            Stopped taking orders. Try calling Mavshi for urgent request
-          </p>
-        )}
+        {/* TIMINGS */}
+        <div className="text-sm text-gray-600 leading-relaxed">
+          <p className="font-medium text-gray-700 mb-1">Timings</p>
+          <p>7:00 AM – 1:00 PM</p>
+          <p>4:00 PM – 9:00 PM</p>
+        </div>
       </div>
     );
   }
-
   /* ---------------- UI ---------------- */
 
   return (

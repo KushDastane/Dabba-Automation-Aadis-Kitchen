@@ -246,5 +246,4 @@ export default function Khata() {
       </div>
     </div>
   );
-
 }
