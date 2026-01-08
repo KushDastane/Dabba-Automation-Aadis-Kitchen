@@ -238,151 +238,194 @@ export default function Menu() {
   };
 
   if (viewMode === "summary") {
-    return (
-  <div className="pt-7 px-6 pb-24">
-    <PageHeader name="Today's Menu" />
+   return (
+     <div className="pt-7 px-6 pb-24">
+       <PageHeader name="Today's Menu" />
 
-    <div className="mt-6 space-y-6">
-      {/* LUNCH */}
-      {getMenuSummary("lunch") ? (
-        <div className="rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
-          <div className="flex items-start justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Lunch Menu
-            </h3>
+       <div className="mt-8 space-y-8">
+         {/* LUNCH */}
+         <div className="relative">
+           {/* Accent */}
+           <div className="absolute left-0 top-0 h-full w-1 rounded-full bg-yellow-300" />
 
-            <button
-              onClick={() => startEditing("lunch")}
-              className="p-2 rounded-xl bg-yellow-100 hover:bg-yellow-200 transition"
-              title="Edit Lunch Menu"
-            >
-              <FaPen className="text-yellow-800 text-sm" />
-            </button>
-          </div>
+           {getMenuSummary("lunch") ? (
+             <div className="ml-4 rounded-3xl bg-white/70 backdrop-blur-md p-6 ring-1 ring-black/5 shadow-sm">
+               <div className="flex items-center justify-between mb-4">
+                 <div>
+                   <span className="text-xs font-semibold tracking-wide text-yellow-700">
+                     LUNCH
+                   </span>
+                   <h3 className="text-lg font-semibold text-gray-900">
+                     Lunch Menu
+                   </h3>
+                 </div>
 
-          <div className="text-sm text-gray-700 space-y-1">
-            {getMenuSummary("lunch").type === "Roti – Sabzi" ? (
-              <>
-                <p className="text-gray-800">
-                  <span className="font-medium">Half:</span>{" "}
-                  {getMenuSummary("lunch").half.items} —{" "}
-                  <span className="text-emerald-600 font-medium">
-                    {getMenuSummary("lunch").half.price}
-                  </span>
-                </p>
-                <p className="text-gray-800">
-                  <span className="font-medium">Full:</span>{" "}
-                  {getMenuSummary("lunch").full.items} —{" "}
-                  <span className="text-emerald-600 font-medium">
-                    {getMenuSummary("lunch").full.price}
-                  </span>
-                </p>
-              </>
-            ) : (
-              <p className="text-gray-800">
-                <span className="font-medium">
-                  {getMenuSummary("lunch").name}
-                </span>{" "}
-                —{" "}
-                <span className="text-emerald-600 font-medium">
-                  {getMenuSummary("lunch").price}
-                </span>
-              </p>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-3xl bg-gray-50/70 p-5 ring-1 ring-dashed ring-black/10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">
-                Lunch Menu
-              </h3>
-              <p className="text-sm text-gray-500">Not set yet</p>
-            </div>
+                 <button
+                   onClick={() => startEditing("lunch")}
+                   className="p-2 rounded-xl bg-yellow-100 hover:bg-yellow-200 transition"
+                   title="Edit Lunch Menu"
+                 >
+                   <FaPen className="text-yellow-800 text-sm" />
+                 </button>
+               </div>
 
-            <button
-              onClick={() => startEditing("lunch")}
-              className="rounded-xl bg-yellow-100 px-5 py-2.5 text-sm font-medium
-                         text-yellow-900 hover:bg-yellow-200 transition"
-            >
-              Set Menu
-            </button>
-          </div>
-        </div>
-      )}
+               <div className="space-y-2 text-sm text-gray-700">
+                 {getMenuSummary("lunch").type === "Roti – Sabzi" ? (
+                   <>
+                     <div className="flex items-center justify-between">
+                       <span className="font-medium text-gray-800">
+                         Half Dabba
+                       </span>
+                       <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 font-medium">
+                         {getMenuSummary("lunch").half.price}
+                       </span>
+                     </div>
+                     <p className="text-xs text-gray-500">
+                       {getMenuSummary("lunch").half.items}
+                     </p>
 
-      {/* DINNER */}
-      {getMenuSummary("dinner") ? (
-        <div className="rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
-          <div className="flex items-start justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Dinner Menu
-            </h3>
+                     <div className="flex items-center justify-between pt-2">
+                       <span className="font-medium text-gray-800">
+                         Full Dabba
+                       </span>
+                       <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 font-medium">
+                         {getMenuSummary("lunch").full.price}
+                       </span>
+                     </div>
+                     <p className="text-xs text-gray-500">
+                       {getMenuSummary("lunch").full.items}
+                     </p>
+                   </>
+                 ) : (
+                   <div className="flex items-center justify-between">
+                     <span className="font-medium text-gray-800">
+                       {getMenuSummary("lunch").name}
+                     </span>
+                     <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 font-medium">
+                       {getMenuSummary("lunch").price}
+                     </span>
+                   </div>
+                 )}
+               </div>
+             </div>
+           ) : (
+             <div className="ml-4 rounded-3xl bg-gray-50/70 p-6 ring-1 ring-dashed ring-black/10">
+               <div className="flex items-center justify-between">
+                 <div>
+                   <span className="text-xs font-semibold tracking-wide text-yellow-700">
+                     LUNCH
+                   </span>
+                   <h3 className="text-lg font-semibold text-gray-800">
+                     Lunch Menu
+                   </h3>
+                   <p className="text-sm text-gray-500 mt-1">Not set yet</p>
+                 </div>
 
-            <button
-              onClick={() => startEditing("dinner")}
-              className="p-2 rounded-xl bg-yellow-100 hover:bg-yellow-200 transition"
-              title="Edit Dinner Menu"
-            >
-              <FaPen className="text-yellow-800 text-sm" />
-            </button>
-          </div>
+                 <button
+                   onClick={() => startEditing("lunch")}
+                   className="rounded-xl bg-yellow-100 px-5 py-2.5 text-sm font-medium
+                           text-yellow-900 hover:bg-yellow-200 transition"
+                 >
+                   Set Menu
+                 </button>
+               </div>
+             </div>
+           )}
+         </div>
 
-          <div className="text-sm text-gray-700 space-y-1">
-            {getMenuSummary("dinner").type === "Roti – Sabzi" ? (
-              <>
-                <p className="text-gray-800">
-                  <span className="font-medium">Half:</span>{" "}
-                  {getMenuSummary("dinner").half.items} —{" "}
-                  <span className="text-emerald-600 font-medium">
-                    {getMenuSummary("dinner").half.price}
-                  </span>
-                </p>
-                <p className="text-gray-800">
-                  <span className="font-medium">Full:</span>{" "}
-                  {getMenuSummary("dinner").full.items} —{" "}
-                  <span className="text-emerald-600 font-medium">
-                    {getMenuSummary("dinner").full.price}
-                  </span>
-                </p>
-              </>
-            ) : (
-              <p className="text-gray-800">
-                <span className="font-medium">
-                  {getMenuSummary("dinner").name}
-                </span>{" "}
-                —{" "}
-                <span className="text-emerald-600 font-medium">
-                  {getMenuSummary("dinner").price}
-                </span>
-              </p>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-3xl bg-gray-50/70 p-5 ring-1 ring-dashed ring-black/10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">
-                Dinner Menu
-              </h3>
-              <p className="text-sm text-gray-500">Not set yet</p>
-            </div>
+         {/* DINNER */}
+         <div className="relative">
+           {/* Accent */}
+           <div className="absolute left-0 top-0 h-full w-1 rounded-full bg-amber-400" />
 
-            <button
-              onClick={() => startEditing("dinner")}
-              className="rounded-xl bg-yellow-100 px-5 py-2.5 text-sm font-medium
-                         text-yellow-900 hover:bg-yellow-200 transition"
-            >
-              Set Menu
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  </div>
-);
+           {getMenuSummary("dinner") ? (
+             <div className="ml-4 rounded-3xl bg-white/70 backdrop-blur-md p-6 ring-1 ring-black/5 shadow-sm">
+               <div className="flex items-center justify-between mb-4">
+                 <div>
+                   <span className="text-xs font-semibold tracking-wide text-amber-700">
+                     DINNER
+                   </span>
+                   <h3 className="text-lg font-semibold text-gray-900">
+                     Dinner Menu
+                   </h3>
+                 </div>
+
+                 <button
+                   onClick={() => startEditing("dinner")}
+                   className="p-2 rounded-xl bg-amber-100 hover:bg-amber-200 transition"
+                   title="Edit Dinner Menu"
+                 >
+                   <FaPen className="text-amber-800 text-sm" />
+                 </button>
+               </div>
+
+               <div className="space-y-2 text-sm text-gray-700">
+                 {getMenuSummary("dinner").type === "Roti – Sabzi" ? (
+                   <>
+                     <div className="flex items-center justify-between">
+                       <span className="font-medium text-gray-800">
+                         Half Dabba
+                       </span>
+                       <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 font-medium">
+                         {getMenuSummary("dinner").half.price}
+                       </span>
+                     </div>
+                     <p className="text-xs text-gray-500">
+                       {getMenuSummary("dinner").half.items}
+                     </p>
+
+                     <div className="flex items-center justify-between pt-2">
+                       <span className="font-medium text-gray-800">
+                         Full Dabba
+                       </span>
+                       <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 font-medium">
+                         {getMenuSummary("dinner").full.price}
+                       </span>
+                     </div>
+                     <p className="text-xs text-gray-500">
+                       {getMenuSummary("dinner").full.items}
+                     </p>
+                   </>
+                 ) : (
+                   <div className="flex items-center justify-between">
+                     <span className="font-medium text-gray-800">
+                       {getMenuSummary("dinner").name}
+                     </span>
+                     <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 font-medium">
+                       {getMenuSummary("dinner").price}
+                     </span>
+                   </div>
+                 )}
+               </div>
+             </div>
+           ) : (
+             <div className="ml-4 rounded-3xl bg-gray-50/70 p-6 ring-1 ring-dashed ring-black/10">
+               <div className="flex items-center justify-between">
+                 <div>
+                   <span className="text-xs font-semibold tracking-wide text-amber-700">
+                     DINNER
+                   </span>
+                   <h3 className="text-lg font-semibold text-gray-800">
+                     Dinner Menu
+                   </h3>
+                   <p className="text-sm text-gray-500 mt-1">Not set yet</p>
+                 </div>
+
+                 <button
+                   onClick={() => startEditing("dinner")}
+                   className="rounded-xl bg-amber-100 px-5 py-2.5 text-sm font-medium
+                           text-amber-900 hover:bg-amber-200 transition"
+                 >
+                   Set Menu
+                 </button>
+               </div>
+             </div>
+           )}
+         </div>
+       </div>
+     </div>
+   );
+
 
   }
 
@@ -696,7 +739,7 @@ export default function Menu() {
           onClick={saveMenu}
           className="
       w-full rounded-2xl
-      bg-emerald-500 hover:bg-emerald-600
+      bg-yellow-600 hover:bg-yellow-700
       text-white py-4 text-base font-semibold
       shadow-sm transition cursor-pointer
     "

@@ -127,114 +127,137 @@ export default function StudentOrders() {
 
   /* ---------------- UI ---------------- */
 
-  return (
-    <div className="pb-24 bg-[#faf9f6] min-h-screen">
-      {/* HEADER */}
-      <h2 className="text-2xl font-semibold mb-1">My Thali History</h2>
-      <p className="text-sm text-gray-500 mb-4">
-        Track your daily tiffins and expenses
+ return (
+  <div className="pb-24 bg-[#faf9f6] min-h-screen px-4">
+    {/* HEADER */}
+    <div className="mb-6">
+      <h2 className="text-xl font-semibold text-gray-900">
+        My Thali History
+      </h2>
+      <p className="text-sm text-gray-600">
+        Track your daily tiffins and monthly expenses
       </p>
+    </div>
 
-      {/* STATS */}
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="text-xs text-gray-500">Total Expense (This Month)</p>
-          <p className="text-xl font-semibold mt-1">₹{totalExpense}</p>
-        </div>
-
-        <div className="bg-[#f7fbe9] rounded-2xl p-4 shadow-sm">
-          <p className="text-xs text-gray-600">Tiffins This Month</p>
-          <p className="text-xl font-semibold mt-1">{totalTiffins}</p>
-        </div>
+    {/* STATS */}
+    <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="rounded-3xl bg-white/70 backdrop-blur-md p-4 ring-1 ring-black/5 shadow-sm">
+        <p className="text-xs text-gray-500">
+          Total Expense (This Month)
+        </p>
+        <p className="text-xl font-semibold text-gray-900 mt-1">
+          ₹{totalExpense}
+        </p>
       </div>
 
-      {/* FILTERS */}
-      <div className="flex gap-3 mb-6">
-        <button
-          onClick={() => setMonthFilter("ALL")}
-          className={`px-4 py-1.5 rounded-full text-sm ${
-            monthFilter === "ALL"
-              ? "bg-black text-white"
-              : "bg-white text-gray-700 shadow-sm"
-          }`}
-        >
-          All Orders
-        </button>
-
-        <button
-          onClick={() => setMonthFilter("THIS_MONTH")}
-          className={`px-4 py-1.5 rounded-full text-sm ${
-            monthFilter === "THIS_MONTH"
-              ? "bg-black text-white"
-              : "bg-white text-gray-700 shadow-sm"
-          }`}
-        >
-          This Month
-        </button>
+      <div className="rounded-3xl bg-yellow-50 p-4 ring-1 ring-yellow-200 shadow-sm">
+        <p className="text-xs text-yellow-800">
+          Tiffins This Month
+        </p>
+        <p className="text-xl font-semibold text-yellow-900 mt-1">
+          {totalTiffins}
+        </p>
       </div>
+    </div>
 
-      {/* ORDERS */}
-      {["today", "yesterday", "older"].map(
-        (key) =>
-          groupedOrders[key].length > 0 && (
-            <div key={key} className="mb-6">
-              <p className="text-sm text-gray-500 mb-3 capitalize">{key}</p>
+    {/* FILTER */}
+    <div className="flex gap-2 mb-6">
+      {[
+        { key: "ALL", label: "All Orders" },
+        { key: "THIS_MONTH", label: "This Month" },
+      ].map((f) => {
+        const active = monthFilter === f.key;
+        return (
+          <button
+            key={f.key}
+            onClick={() => setMonthFilter(f.key)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition
+              ${
+                active
+                  ? "bg-yellow-100 text-yellow-900 ring-2 ring-yellow-300"
+                  : "bg-white text-gray-700 ring-1 ring-black/5 hover:bg-gray-50"
+              }`}
+          >
+            {f.label}
+          </button>
+        );
+      })}
+    </div>
 
-              <div className="space-y-3">
-                {groupedOrders[key].map((o) => {
-                  const { day, month } = formatDayPill(o.createdAt);
-                  const price = Number(o.items?.unitPrice || 0);
-                  const qty = Number(o.items?.quantity || 0);
+    {/* ORDERS BY DATE */}
+    {["today", "yesterday", "older"].map(
+      (key) =>
+        groupedOrders[key].length > 0 && (
+          <div key={key} className="mb-8">
+            {/* SECTION TITLE */}
+            <h4 className="mb-3 text-xs font-semibold tracking-widest text-gray-500 uppercase">
+              {key}
+            </h4>
 
-                  return (
-                    <div
-                      key={o.id}
-                      className="bg-white rounded-2xl p-4 shadow-sm flex gap-4"
-                    >
-                      {/* DATE */}
-                      <div className="w-12 text-center rounded-xl bg-gray-50 py-2">
-                        <p className="text-xs text-gray-500">{month}</p>
-                        <p className="text-lg font-semibold">{day}</p>
-                      </div>
+            <div className="space-y-4">
+              {groupedOrders[key].map((o) => {
+                const { day, month } = formatDayPill(o.createdAt);
+                const price = Number(o.items?.unitPrice || 0);
+                const qty = Number(o.items?.quantity || 0);
 
-                      {/* CONTENT */}
-                      <div className="flex-1">
-                        <div className="flex justify-between">
-                          <div>
-                            <p className="text-xs text-gray-400">
-                              {o.mealType}
-                            </p>
-                            <p className="font-medium">{o.items?.item}</p>
-                            <p className="text-sm text-gray-500">
-                              {qty} × ₹{price}
-                            </p>
-                          </div>
+                return (
+                  <div
+                    key={o.id}
+                    className="rounded-3xl bg-white/70 backdrop-blur-md p-4 ring-1 ring-black/5 shadow-sm flex gap-4"
+                  >
+                    {/* DATE PILL */}
+                    <div className="w-12 shrink-0 rounded-2xl bg-gray-50 py-2 text-center ring-1 ring-black/5">
+                      <p className="text-[10px] text-gray-500">
+                        {month}
+                      </p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {day}
+                      </p>
+                    </div>
 
-                          <div className="text-right">
-                            <p className="font-semibold">₹{price * qty}</p>
-                            <span
-                              className={`inline-block mt-1 text-xs px-2 py-1 rounded-full ${statusStyle(
-                                o.status
-                              )}`}
-                            >
-                              {o.status}
-                            </span>
-                          </div>
+                    {/* CONTENT */}
+                    <div className="flex-1">
+                      <div className="flex justify-between gap-3">
+                        <div>
+                          <p className="text-xs text-gray-400">
+                            {o.mealType}
+                          </p>
+                          <p className="font-medium text-gray-900">
+                            {o.items?.item}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {qty} × ₹{price}
+                          </p>
                         </div>
 
-                        {o.status === "PENDING" && (
-                          <p className="text-xs text-red-500 mt-2">
-                            ⚠ Once confirmed, order cannot be changed
+                        <div className="text-right">
+                          <p className="font-semibold text-gray-900">
+                            ₹{price * qty}
                           </p>
-                        )}
+                          <span
+                            className={`inline-block mt-1 text-xs px-2 py-1 rounded-full ${statusStyle(
+                              o.status
+                            )}`}
+                          >
+                            {o.status}
+                          </span>
+                        </div>
                       </div>
+
+                      {o.status === "PENDING" && (
+                        <p className="mt-2 text-xs text-red-500">
+                          Once confirmed, order cannot be changed
+                        </p>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
-          )
-      )}
-    </div>
-  );
+          </div>
+        )
+    )}
+  </div>
+);
+
 }

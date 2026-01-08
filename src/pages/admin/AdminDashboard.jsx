@@ -34,7 +34,7 @@ export default function AdminDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-[#fffaf2]">
+    <div className="min-h-screen bg-[#fffaf2] pb-6">
       {/* HEADER */}
       <div className="px-4 md:px-6 lg:px-10 pt-6 mb-6">
         <p className="text-xs text-gray-500 uppercase tracking-wide">{today}</p>

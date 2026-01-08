@@ -20,7 +20,11 @@ export default function KitchenSettings() {
   }, []);
 
   if (loading) {
-    return <p className="text-center mt-10">Loading kitchen settings…</p>;
+    return (
+      <p className="text-center mt-10 text-gray-500">
+        Loading kitchen settings…
+      </p>
+    );
   }
 
   const holiday = config.holiday || {};
@@ -39,109 +43,135 @@ export default function KitchenSettings() {
   };
 
   return (
-    <div className="pb-24">
+    <div className="pb-24 pt-6 px-6 bg-[#faf9f6] min-h-screen">
       <PageHeader name="Kitchen Settings" />
 
-      {/* OPEN / CLOSE */}
-      <div className="bg-white rounded-xl p-4 mb-4">
-        <h3 className="font-medium mb-3">Kitchen Timings</h3>
+      <div className="mt-8 space-y-6 max-w-3xl">
+        {/* KITCHEN TIMINGS */}
+        <div className="rounded-3xl bg-white/70 backdrop-blur-md p-6 ring-1 ring-black/5 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-800 mb-4 tracking-wide">
+            KITCHEN TIMINGS
+          </h3>
 
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <label className="text-xs text-gray-500">Opens At</label>
-            <input
-              type="time"
-              value={config.openTime}
-              onChange={(e) =>
-                setConfig({ ...config, openTime: e.target.value })
-              }
-              className="w-full border rounded-lg p-2 mt-1"
-            />
-          </div>
-
-          <div className="flex-1">
-            <label className="text-xs text-gray-500">Closes At</label>
-            <input
-              type="time"
-              value={config.closeTime}
-              onChange={(e) =>
-                setConfig({ ...config, closeTime: e.target.value })
-              }
-              className="w-full border rounded-lg p-2 mt-1"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* HOLIDAY */}
-      <div className="bg-white rounded-xl p-4 mb-4">
-        <h3 className="font-medium mb-3">Kitchen Holiday</h3>
-
-        <label className="flex items-center gap-2 mb-3">
-          <input
-            type="checkbox"
-            checked={holiday.active}
-            onChange={(e) =>
-              setConfig({
-                ...config,
-                holiday: { ...holiday, active: e.target.checked },
-              })
-            }
-          />
-          <span className="text-sm">Enable holiday</span>
-        </label>
-
-        {holiday.active && (
-          <>
-            <div className="flex gap-3 mb-3">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="text-xs text-gray-500">Opens At</label>
               <input
-                type="date"
-                value={holiday.from || ""}
+                type="time"
+                value={config.openTime}
                 onChange={(e) =>
-                  setConfig({
-                    ...config,
-                    holiday: { ...holiday, from: e.target.value },
-                  })
+                  setConfig({ ...config, openTime: e.target.value })
                 }
-                className="flex-1 border rounded-lg p-2"
-              />
-
-              <input
-                type="date"
-                value={holiday.to || ""}
-                onChange={(e) =>
-                  setConfig({
-                    ...config,
-                    holiday: { ...holiday, to: e.target.value },
-                  })
-                }
-                className="flex-1 border rounded-lg p-2"
+                className="mt-1 w-full rounded-2xl bg-gray-50 px-4 py-3 text-sm
+                           ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300
+                           outline-none transition"
               />
             </div>
 
+            <div className="flex-1">
+              <label className="text-xs text-gray-500">Closes At</label>
+              <input
+                type="time"
+                value={config.closeTime}
+                onChange={(e) =>
+                  setConfig({ ...config, closeTime: e.target.value })
+                }
+                className="mt-1 w-full rounded-2xl bg-gray-50 px-4 py-3 text-sm
+                           ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300
+                           outline-none transition"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* HOLIDAY SETTINGS */}
+        <div className="rounded-3xl bg-white/70 backdrop-blur-md p-6 ring-1 ring-black/5 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-800 mb-4 tracking-wide">
+            KITCHEN HOLIDAY
+          </h3>
+
+          <label className="flex items-center gap-3 mb-4 cursor-pointer">
             <input
-              type="text"
-              placeholder="Reason (optional)"
-              value={holiday.reason || ""}
+              type="checkbox"
+              checked={holiday.active}
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  holiday: { ...holiday, reason: e.target.value },
+                  holiday: {
+                    ...holiday,
+                    active: e.target.checked,
+                  },
                 })
               }
-              className="w-full border rounded-lg p-2"
+              className="h-4 w-4 accent-yellow-500"
             />
-          </>
-        )}
-      </div>
+            <span className="text-sm text-gray-700">Enable holiday period</span>
+          </label>
 
-      <button
-        disabled={saving}
-        onClick={save}
-        className="w-full bg-black text-white py-3 rounded-xl"
-      >
-        {saving ? "Saving…" : "Save Settings"}
-      </button>
+          {holiday.active && (
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <input
+                  type="date"
+                  value={holiday.from || ""}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      holiday: { ...holiday, from: e.target.value },
+                    })
+                  }
+                  className="flex-1 rounded-2xl bg-gray-50 px-4 py-3 text-sm
+                             ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300
+                             outline-none transition"
+                />
+
+                <input
+                  type="date"
+                  value={holiday.to || ""}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      holiday: { ...holiday, to: e.target.value },
+                    })
+                  }
+                  className="flex-1 rounded-2xl bg-gray-50 px-4 py-3 text-sm
+                             ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300
+                             outline-none transition"
+                />
+              </div>
+
+              <input
+                type="text"
+                placeholder="Reason (optional)"
+                value={holiday.reason || ""}
+                onChange={(e) =>
+                  setConfig({
+                    ...config,
+                    holiday: {
+                      ...holiday,
+                      reason: e.target.value,
+                    },
+                  })
+                }
+                className="w-full rounded-2xl bg-gray-50 px-4 py-3 text-sm
+                           ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300
+                           outline-none transition"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* SAVE BUTTON */}
+        <button
+          disabled={saving}
+          onClick={save}
+          className="w-full rounded-2xl bg-yellow-600 hover:bg-yellow-700
+                     text-white py-4 text-base font-semibold
+                     shadow-sm transition disabled:opacity-60"
+        >
+          {saving ? "Saving…" : "Save Settings"}
+        </button>
+      </div>
     </div>
   );
 }
