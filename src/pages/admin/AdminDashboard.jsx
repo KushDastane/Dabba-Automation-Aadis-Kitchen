@@ -1,16 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiClock, FiDollarSign, FiUsers, FiPackage } from "react-icons/fi";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebase/firebase";
 
 import RecentOrdersPreview from "../../components/admin/RecentOrders";
 import MealStatusBanner from "../../components/admin/MealStatusBanner";
 
 import { listenToAdminStats } from "../../services/adminDashboardService";
 import { confirmOrder } from "../../services/orderService";
-import { getTodayMenu } from "../../services/menuService";
+import { resetMenuIfNeeded } from "../../services/menuService";
+import {
+  getEffectiveMenuDateKey,
+  getEffectiveMealSlot,
+} from "../../services/menuService";
 
 export default function AdminDashboard() {
+  
   const navigate = useNavigate();
+
+  useEffect(() => {
+    resetMenuIfNeeded();
+  }, []);
 
   const [stats, setStats] = useState({
     pendingOrders: 0,
@@ -19,12 +30,57 @@ export default function AdminDashboard() {
     studentsToday: 0,
   });
 
-  const [menuAvailable, setMenuAvailable] = useState(false);
+  const [menuData, setMenuData] = useState(null);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  const dateKey = useMemo(() => getEffectiveMenuDateKey(), [currentTime]);
+  const slot = useMemo(() => getEffectiveMealSlot(), [currentTime]);
+
+const menuAvailable = useMemo(() => {
+  if (!slot) return false;
+  if (!menuData) return false;
+
+  const slotMenu = menuData[slot];
+  if (!slotMenu) return false;
+
+  return (
+    typeof slotMenu === "object" &&
+    slotMenu.type &&
+    (slotMenu.rotiSabzi || slotMenu.other)
+  );
+}, [menuData, slot]);
+
 
   useEffect(() => {
-    const unsub = listenToAdminStats(setStats);
-    getTodayMenu().then((menu) => setMenuAvailable(!!menu));
-    return () => unsub();
+    const unsubStats = listenToAdminStats(setStats);
+
+    let unsubMenu;
+    if (slot) {
+      unsubMenu = onSnapshot(
+        doc(db, "menus", dateKey),
+        (snap) => {
+          const menu = snap.exists() ? snap.data() : null;
+          setMenuData(menu);
+        },
+        (error) => {
+          console.error("Menu listener error:", error);
+          setMenuData(null);
+        }
+      );
+    }
+
+    return () => {
+      unsubStats();
+      if (unsubMenu) unsubMenu();
+    };
+  }, [dateKey, slot]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
   }, []);
 
   const today = new Date().toLocaleDateString("en-IN", {
@@ -48,7 +104,11 @@ export default function AdminDashboard() {
 
       {/* FULL WIDTH STATUS BANNER */}
       <div className="mx-4 md:mx-6 lg:mx-10">
-        <MealStatusBanner menuAvailable={menuAvailable} stats={stats} />
+        <MealStatusBanner
+          menuAvailable={menuAvailable}
+          stats={stats}
+          slot={slot}
+        />
       </div>
 
       {/* MAIN GRID */}

@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { db } from "../../firebase/firebase";
-import { doc, getDoc } from "firebase/firestore";
-import { getTodayKey } from "../../services/menuService";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import {
+  getTodayKey,
+  getTomorrowKey,
+  isAfterResetTime,
+} from "../../services/menuService";
 import { placeStudentOrder } from "../../services/orderService";
 import { useAuthUser } from "../../hooks/useAuthUser";
 import { useNavigate } from "react-router-dom";
 import { FiCheck } from "react-icons/fi";
 import ClosedImg from "/closed.png";
+import {
+  getEffectiveMenuDateKey,
+  getEffectiveMealSlot,
+} from "../../services/menuService";
 
 function MenuCard({
   title,
@@ -79,6 +87,9 @@ function MenuCard({
 }
 
 export default function PlaceOrder() {
+  const dateKey = getEffectiveMenuDateKey();
+  const slot = getEffectiveMealSlot();
+
   const navigate = useNavigate();
   const { authUser } = useAuthUser();
 
@@ -89,15 +100,20 @@ export default function PlaceOrder() {
   const [quantity, setQuantity] = useState(1);
   const [extrasQty, setExtrasQty] = useState({});
 
-  const currentHour = new Date().getHours();
+  const [currentHour, setCurrentHour] = useState(new Date().getHours());
+
+  const [menuMissing, setMenuMissing] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHour(new Date().getHours());
+    }, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
 
   /* ---------------- TIME RULES ---------------- */
 
-  const mealSlotToShow = useMemo(() => {
-    if (currentHour < 14) return "lunch";
-    if (currentHour < 21) return "dinner";
-    return null;
-  }, [currentHour]);
+  const mealSlotToShow = getEffectiveMealSlot();
 
   const canPlaceOrder = useMemo(() => {
     if (mealSlotToShow === "lunch") return currentHour < 13;
@@ -107,25 +123,52 @@ export default function PlaceOrder() {
 
   /* ---------------- FETCH MENU ---------------- */
 
+  /* ---------------- FETCH MENU ---------------- */
+
   useEffect(() => {
-    if (!mealSlotToShow) {
-      setMenu(null);
+    // RESET EVERYTHING FIRST (prevents stale menu)
+    setMenu(null);
+    setMenuMissing(false);
+    setLoading(true);
+
+    // 🔴 No active slot → kitchen closed
+    if (!slot) {
       setLoading(false);
       return;
     }
 
-    const fetchMenu = async () => {
-      const snap = await getDoc(doc(db, "menus", getTodayKey()));
-      if (snap.exists() && snap.data()[mealSlotToShow]) {
-        setMenu(snap.data()[mealSlotToShow]);
+    const ref = doc(db, "menus", dateKey);
+
+    const unsub = onSnapshot(ref, (snap) => {
+      if (!snap.exists()) {
+        setMenu(null);
+        setMenuMissing(true);
+        setLoading(false);
+        return;
+      }
+
+      const slotMenu = snap.data()?.[slot];
+
+      // ✅ STRICT CONTENT CHECK
+      const hasRealMenu =
+        slotMenu &&
+        typeof slotMenu === "object" &&
+        slotMenu.type &&
+        (slotMenu.rotiSabzi || slotMenu.other);
+
+      if (hasRealMenu) {
+        setMenu(slotMenu);
+        setMenuMissing(false);
       } else {
         setMenu(null);
+        setMenuMissing(true);
       }
-      setLoading(false);
-    };
 
-    fetchMenu();
-  }, [mealSlotToShow]);
+      setLoading(false);
+    });
+
+    return () => unsub();
+  }, [dateKey, slot]); // ✅ CRITICAL FIX
 
   /* ---------------- HANDLERS ---------------- */
 
@@ -177,22 +220,45 @@ export default function PlaceOrder() {
     return <p className="text-center mt-10">Loading menu...</p>;
   }
 
+  /* ---------------- STATES ---------------- */
+
+  if (loading) {
+    return <p className="text-center mt-10">Loading menu...</p>;
+  }
+
+  /* 🟡 MENU NOT DECIDED */
+  if (menuMissing) {
+    return (
+      <div className="flex flex-col items-center justify-center mt-24 px-6 text-center">
+        <img
+          src={ClosedImg}
+          alt="Menu Not Decided"
+          className="md:w-50 w-70 max-w-full mb-6 opacity-90"
+        />
+
+        <p className="text-xl font-semibold text-gray-800 mb-2">
+          <span className="text-yellow-700">Oops,</span> menu not decided yet
+        </p>
+
+        <p className="text-sm text-gray-600">Please come back later</p>
+      </div>
+    );
+  }
+
+  /* 🔴 KITCHEN CLOSED */
   if (!menu) {
     return (
       <div className="flex flex-col items-center justify-center mt-24 px-6 text-center">
-        {/* IMAGE */}
         <img
           src={ClosedImg}
           alt="Kitchen Closed"
           className="md:w-50 w-70 max-w-full mb-6 opacity-90"
         />
 
-        {/* MAIN TEXT */}
         <p className="text-xl font-semibold text-gray-800 mb-2">
           <span className="text-yellow-700">Oops,</span> we are closed
         </p>
 
-        {/* TIMINGS */}
         <div className="text-sm text-gray-600 leading-relaxed">
           <p className="font-medium text-gray-700 mb-1">Timings</p>
           <p>7:00 AM – 1:00 PM</p>
@@ -201,6 +267,7 @@ export default function PlaceOrder() {
       </div>
     );
   }
+
   /* ---------------- UI ---------------- */
 
   return (
@@ -209,7 +276,8 @@ export default function PlaceOrder() {
         {/* HEADER */}
         <div className="px-4 pt-5 mb-6">
           <p className="text-xs text-gray-500 tracking-wide">
-            TODAY • {mealSlotToShow?.toUpperCase()}
+            {isAfterResetTime() ? "TOMORROW" : "TODAY"} •{" "}
+            {mealSlotToShow?.toUpperCase()}
           </p>
 
           <h2 className="text-xl font-semibold text-gray-900 mt-1">

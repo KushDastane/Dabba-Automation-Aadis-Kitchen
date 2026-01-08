@@ -1,7 +1,8 @@
 // src/services/adminDashboardService.js
 import { db } from "../firebase/firebase";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc } from "firebase/firestore";
 import { getTodayKey } from "./menuService";
+import { getDailyStats } from "./dailyStatsService";
 
 /**
  * Real-time dashboard stats
@@ -9,22 +10,28 @@ import { getTodayKey } from "./menuService";
 export const listenToAdminStats = (callback) => {
   const today = getTodayKey();
 
+  // Listen to daily stats for cumulative totalOrders
+  const unsubDailyStats = onSnapshot(doc(db, "dailyStats", today), (snap) => {
+    const totalOrders = snap.exists() ? snap.data().totalOrders : 0;
+    callback((prev) => ({
+      ...prev,
+      totalOrders,
+    }));
+  });
+
   const unsubOrders = onSnapshot(
     query(collection(db, "orders"), where("date", "==", today)),
     (snap) => {
-      let total = 0;
       let pending = 0;
       const students = new Set();
 
       snap.docs.forEach((d) => {
-        total++;
         students.add(d.data().studentId);
         if (d.data().status === "PENDING") pending++;
       });
 
       callback((prev) => ({
         ...prev,
-        totalOrders: total,
         pendingOrders: pending,
         studentsToday: students.size,
       }));
@@ -42,6 +49,7 @@ export const listenToAdminStats = (callback) => {
   );
 
   return () => {
+    unsubDailyStats();
     unsubOrders();
     unsubPayments();
   };

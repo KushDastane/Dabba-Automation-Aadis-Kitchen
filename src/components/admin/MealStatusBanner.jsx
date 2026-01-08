@@ -5,13 +5,10 @@ import {
   FiSun,
   FiMoon,
 } from "react-icons/fi";
-import { getCurrentMealSlot } from "../../services/menuService";
 
-export default function MealStatusBanner({ menuAvailable, stats }) {
-  const slot = getCurrentMealSlot();
-
+export default function MealStatusBanner({ menuAvailable, stats, slot }) {
   const SlotIcon =
-    slot === "breakfast" ? FiCoffee : slot === "lunch" ? FiSun : FiMoon;
+    slot === "lunch" ? FiSun : slot === "dinner" ? FiMoon : FiCoffee;
 
   const StatusIcon = menuAvailable ? FiCheckCircle : FiAlertTriangle;
 
@@ -49,7 +46,7 @@ export default function MealStatusBanner({ menuAvailable, stats }) {
               Current Meal
             </p>
             <p className="text-xl font-semibold text-white capitalize">
-              {slot}
+              {slot ?? "Closed"}
             </p>
 
             {!menuAvailable && (

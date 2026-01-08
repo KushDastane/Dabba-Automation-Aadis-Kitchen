@@ -14,6 +14,10 @@ import {
 import { getTodayKey } from "./menuService";
 import { notify } from "./notificationService";
 import { addLedgerEntry } from "./ledgerService";
+import {
+  incrementTotalOrders,
+  incrementStudentsToday,
+} from "./dailyStatsService";
 import { ADMIN_UID } from "../constants/admin";
 import { Timestamp } from "firebase/firestore";
 /* ===========================
@@ -34,7 +38,24 @@ export const placeStudentOrder = async ({ studentId, mealType, items }) => {
     createdBy: "student",
   });
 
-  // 2️⃣ Fetch student name (non-blocking)
+  // 2️⃣ Increment daily total orders (non-blocking)
+  try {
+    await incrementTotalOrders();
+  } catch (err) {
+    console.error("Failed to increment daily stats", err);
+  }
+
+  // 3️⃣ Increment students today count if first order today (non-blocking)
+  try {
+    const existingOrder = await getTodayStudentOrder(studentId);
+    if (!existingOrder) {
+      await incrementStudentsToday();
+    }
+  } catch (err) {
+    console.error("Failed to increment students today", err);
+  }
+
+  // 4️⃣ Fetch student name (non-blocking)
   let studentName = "Student";
   try {
     const userSnap = await getDoc(doc(db, "users", studentId));

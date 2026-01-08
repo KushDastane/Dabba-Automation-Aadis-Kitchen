@@ -1,6 +1,2 @@
-- [x] Combine all items (pending payments, rejected payments, ledger entries) into one list
-- [x] Sort items by date groups: today, yesterday, older
-- [x] Within each group, prioritize rejected items first, then pending, then verified, then by date descending
-- [x] Add filters for All, Rejected, Pending, Verified
-- [x] Update UI to render combined list with appropriate styling for each item type
-- [x] Test the updated Khata page functionality
+- [x] Update AdminDashboard.jsx to use Firestore onSnapshot listener for real-time menu availability updates instead of polling
+- [x] Update PlaceOrder.jsx to use Firestore onSnapshot listener for real-time menu data updates instead of polling
