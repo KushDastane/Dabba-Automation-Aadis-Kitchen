@@ -233,6 +233,7 @@ export default function StudentProfile() {
             title={`₹${p.amount}`}
             subtitle={p.createdAt?.toDate()?.toLocaleString()}
             status={p.status}
+            paymentMode={p.paymentMode}
           />
         ))}
     </div>
@@ -255,8 +256,7 @@ function Stat({ label, value, highlight }) {
     </div>
   );
 }
-
-function Card({ title, subtitle, amount, status }) {
+function Card({ title, subtitle, amount, status, paymentMode }) {
   const statusColor = {
     ACCEPTED: "bg-green-100 text-green-700",
     CONFIRMED: "bg-green-100 text-green-700",
@@ -264,20 +264,41 @@ function Card({ title, subtitle, amount, status }) {
     REJECTED: "bg-red-100 text-red-700",
   };
 
+  const modeColor = {
+    CASH: "bg-blue-100 text-blue-700",
+    UPI: "bg-emerald-100 text-emerald-700",
+  };
+
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm mb-3 max-w-full overflow-hidden">
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="font-medium">{title}</p>
-          <p className="text-xs text-gray-400 break-all">{subtitle}</p>
+    <div className="bg-white rounded-xl p-4 shadow-sm mb-3 w-full">
+      {/* TOP ROW */}
+      <div className="flex justify-between items-start gap-3">
+        <div className="min-w-0">
+          <p className="font-medium truncate">{title}</p>
+          <p className="text-xs text-gray-400 truncate">{subtitle}</p>
         </div>
+
         <span
-          className={`text-xs px-2 py-0.5 rounded-full ${statusColor[status]}`}
+          className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[status]}`}
         >
           {status}
         </span>
       </div>
-      {amount && <p className="mt-2 font-medium">{amount}</p>}
+
+      {/* BOTTOM ROW */}
+      <div className="mt-3 flex items-center gap-2 flex-wrap">
+        {amount && <p className="font-semibold text-gray-900">{amount}</p>}
+
+        {paymentMode && (
+          <span
+            className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${modeColor[paymentMode]}`}
+          >
+            {paymentMode}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
+
+

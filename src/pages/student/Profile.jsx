@@ -51,7 +51,7 @@ export default function Profile() {
       <div className="mt-8 max-w-xl mx-auto">
         <button
           onClick={handleLogout}
-          className="w-full rounded-2xl bg-red-50 text-red-700 py-3
+          className="w-full  cursor-pointer rounded-2xl bg-red-50 text-red-700 py-3
                      font-medium flex items-center justify-center gap-2
                      ring-1 ring-red-200 hover:bg-red-100 transition"
         >

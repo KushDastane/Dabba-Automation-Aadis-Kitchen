@@ -1,6 +1,6 @@
-- [ ] Update Firestore query to fetch payments from last 7 days, all statuses
-- [ ] Add "Pending" filter option to the UI
-- [ ] Modify filteredPayments logic to handle status filtering
-- [ ] Add status badge in payment cards for accepted/rejected payments
-- [ ] Hide action buttons for non-pending payments
-- [ ] Test the updated page functionality
+- [x] Combine all items (pending payments, rejected payments, ledger entries) into one list
+- [x] Sort items by date groups: today, yesterday, older
+- [x] Within each group, prioritize rejected items first, then pending, then verified, then by date descending
+- [x] Add filters for All, Rejected, Pending, Verified
+- [x] Update UI to render combined list with appropriate styling for each item type
+- [x] Test the updated Khata page functionality

@@ -6,7 +6,7 @@ import { placeStudentOrder } from "../../services/orderService";
 import { useAuthUser } from "../../hooks/useAuthUser";
 import { useNavigate } from "react-router-dom";
 import { FiCheck } from "react-icons/fi";
-import ClosedImg from "../../../public/closed.png";
+import ClosedImg from "/closed.png";
 
 function MenuCard({
   title,

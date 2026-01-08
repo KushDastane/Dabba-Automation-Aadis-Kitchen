@@ -6,18 +6,27 @@ import {
   updateDoc,
   serverTimestamp,
   getDoc,
+  query,
+  where,
+  orderBy,
+  getDocs,
 } from "firebase/firestore";
 import { addLedgerEntry } from "./ledgerService";
 import { notify } from "./notificationService";
 import { ADMIN_UID } from "../constants/admin";
-import { query, where, orderBy, getDocs } from "firebase/firestore";
 
 // student submits payment
-export const submitPayment = async ({ studentId, amount, slipUrl }) => {
+export const submitPayment = async ({
+  studentId,
+  amount,
+  slipUrl,
+  paymentMode, // "UPI" | "CASH"
+}) => {
   const paymentRef = await addDoc(collection(db, "payments"), {
     studentId,
     amount,
-    slipUrl,
+    slipUrl: paymentMode === "UPI" ? slipUrl : null,
+    paymentMode,
     status: "PENDING",
     createdAt: serverTimestamp(),
     reviewedBy: null,
@@ -39,12 +48,13 @@ export const submitPayment = async ({ studentId, amount, slipUrl }) => {
     role: "admin",
     type: "PAYMENT_SUBMITTED",
     title: "Payment Submitted",
-    message: `${studentName} submitted a payment of ₹${amount}.`,
+    message: `${studentName} submitted a ${paymentMode} payment of ₹${amount}.`,
     data: {
       studentId,
       studentName,
       paymentId: paymentRef.id,
       amount,
+      paymentMode,
     },
   });
 };
@@ -96,6 +106,7 @@ export const rejectPayment = async (paymentId, paymentData) => {
     },
   });
 };
+
 export const getStudentPayments = async (studentId) => {
   const q = query(
     collection(db, "payments"),

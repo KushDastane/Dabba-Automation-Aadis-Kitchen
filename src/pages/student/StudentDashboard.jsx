@@ -7,6 +7,7 @@ import {
   FiCalendar,
   FiCreditCard,
 } from "react-icons/fi";
+import { LiaRupeeSignSolid } from "react-icons/lia";
 
 import { useAuthUser } from "../../hooks/useAuthUser";
 import { getCurrentMealSlot } from "../../services/menuService";
@@ -248,10 +249,12 @@ export default function StudentDashboard() {
             </p>
 
             <button
+              type="button"
               onClick={() => navigate("/add-payment")}
-              className="w-full cursor-pointer bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 rounded-xl transition"
+              className="w-full cursor-pointer flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 rounded-xl transition"
             >
-              Add Money
+              <LiaRupeeSignSolid className="text-lg" />
+              <span>Add Money</span>
             </button>
           </div>
         </div>

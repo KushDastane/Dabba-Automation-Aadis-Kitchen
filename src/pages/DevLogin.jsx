@@ -196,7 +196,7 @@ export default function DevLogin() {
             <button
               onClick={sendOtp}
               disabled={loading}
-              className="w-full bg-yellow-400 hover:bg-yellow-500 disabled:opacity-70 text-black font-semibold py-3 rounded-xl transition shadow-md"
+              className="w-full cursor-pointer bg-yellow-400 hover:bg-yellow-500 disabled:opacity-70 text-black font-semibold py-3 rounded-xl transition shadow-md"
             >
               {loading ? "Please wait..." : "Continue"}
             </button>
@@ -250,7 +250,7 @@ export default function DevLogin() {
               ) : (
                 <button
                   onClick={sendOtp}
-                  className="text-yellow-600 font-medium hover:underline"
+                  className="text-yellow-600 cursor-pointer font-medium hover:underline"
                 >
                   Resend OTP
                 </button>
@@ -260,14 +260,14 @@ export default function DevLogin() {
             <button
               onClick={verifyOtp}
               disabled={loading || !isOtpComplete}
-              className="w-full bg-yellow-400 hover:bg-yellow-500 disabled:opacity-50 text-black font-semibold py-3 rounded-xl transition shadow-md"
+              className="w-full bg-yellow-400 cursor-pointer hover:bg-yellow-500 disabled:opacity-50 text-black font-semibold py-3 rounded-xl transition shadow-md"
             >
               {loading ? "Verifying..." : "Verify & Continue"}
             </button>
 
             <button
               onClick={changeNumber}
-              className="mt-3 text-xs text-gray-500 underline w-full"
+              className="mt-3 text-xs cursor-pointer text-gray-500 underline w-full"
             >
               Change phone number
             </button>

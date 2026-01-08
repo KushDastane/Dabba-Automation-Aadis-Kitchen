@@ -173,10 +173,10 @@ export default function StudentOrders() {
               <button
                 key={f.key}
                 onClick={() => setMonthFilter(f.key)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition
+                className={`px-4 cursor-pointer py-2 rounded-full text-sm font-medium transition
                 ${
                   active
-                    ? "bg-yellow-100 text-yellow-900 ring-2 ring-yellow-300"
+                    ? "bg-yellow-400 text-black"
                     : "bg-white/70 text-gray-700 ring-1 ring-black/5 hover:bg-gray-50"
                 }`}
               >

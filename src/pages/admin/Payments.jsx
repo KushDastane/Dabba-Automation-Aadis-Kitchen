@@ -9,6 +9,8 @@ import {
   getDoc,
   Timestamp,
 } from "firebase/firestore";
+import { FaCheck } from "react-icons/fa6";
+import { RxCross2 } from "react-icons/rx";
 import { acceptPayment, rejectPayment } from "../../services/paymentService";
 import { FiImage } from "react-icons/fi";
 
@@ -91,6 +93,13 @@ export default function Payments() {
     return "Older";
   };
 
+  const getPaymentModeBadge = (mode) => {
+    if (mode === "CASH") {
+      return "bg-blue-100 text-blue-700";
+    }
+    return "bg-emerald-100 text-emerald-700";
+  };
+
   /* ---------------- EMPTY STATE ---------------- */
 
   if (filteredPayments.length === 0) {
@@ -120,8 +129,8 @@ export default function Payments() {
             className={`px-4 py-2 rounded-full md:text-sm text-xs font-medium transition cursor-pointer
               ${
                 statusFilter === s
-                  ? "bg-yellow-100 text-yellow-900 ring-2 ring-yellow-300"
-                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                  ? "bg-yellow-400 text-black"
+                  : "bg-white/70 text-gray-700 ring-1 ring-black/5 hover:bg-gray-50"
               }`}
           >
             {s}
@@ -187,6 +196,15 @@ export default function Payments() {
                       ₹{p.amount}
                     </p>
 
+                    {/* PAYMENT MODE TAG */}
+                    <span
+                      className={`mt-1 inline-block text-[11px] px-2 mr-2 py-0.5 rounded-full font-medium
+    ${getPaymentModeBadge(p.paymentMode)}
+  `}
+                    >
+                      {p.paymentMode || "UPI"}
+                    </span>
+
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full font-medium
     ${
@@ -204,7 +222,7 @@ export default function Payments() {
                 </div>
 
                 {/* SLIP */}
-                {p.slipUrl && (
+                {p.paymentMode === "UPI" && p.slipUrl && (
                   <div
                     onClick={() => setPreviewSlip(p.slipUrl)}
                     className="flex items-center gap-3 rounded-2xl bg-gray-50 p-3 mb-4 cursor-pointer hover:bg-gray-100 transition"
@@ -247,9 +265,17 @@ export default function Payments() {
                       onClick={() =>
                         rejectPayment(p.id, { studentId: p.studentId })
                       }
-                      className="flex-1 rounded-2xl bg-red-100 text-red-700 py-2 font-medium hover:bg-red-200 transition"
+                      className="
+      flex-1 h-11
+      flex items-center justify-center
+      rounded-2xl
+      bg-red-100 text-red-700
+      hover:bg-red-200
+      transition
+    "
+                      aria-label="Reject payment"
                     >
-                      Reject
+                      <RxCross2 className="text-xl" />
                     </button>
 
                     <button
@@ -260,9 +286,17 @@ export default function Payments() {
                           reviewedBy: "admin",
                         })
                       }
-                      className="flex-1 rounded-2xl bg-emerald-500 text-white py-2 font-medium hover:bg-emerald-600 transition"
+                      className="
+      flex-1 h-11
+      flex items-center justify-center
+      rounded-2xl
+      bg-emerald-500 text-white
+      hover:bg-emerald-600
+      transition
+    "
+                      aria-label="Accept payment"
                     >
-                      Accept
+                      <FaCheck className="text-xl" />
                     </button>
                   </div>
                 )}
