@@ -8,13 +8,12 @@ import {
 } from "firebase/firestore";
 
 /**
- * Listen to today's pending orders (real-time)
+ * Listen to today's orders (real-time)
  */
 export const listenToTodayOrders = (dateKey, callback) => {
   const q = query(
     collection(db, "orders"),
     where("date", "==", dateKey),
-    where("status", "==", "PENDING"),
     orderBy("createdAt", "desc")
   );
 

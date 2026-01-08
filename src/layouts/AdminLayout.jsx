@@ -10,7 +10,11 @@ export default function AdminLayout({ children }) {
 
       {/* Content */}
       <div className="flex-1 flex flex-col">
-        <main className="flex-1 pb-20 md:pb-8">
+        {/* 
+          pb-20 ONLY on mobile because bottom nav exists ONLY on mobile
+          NO padding on desktop
+        */}
+        <main className="flex-1 pb-20 md:pb-0">
           <PageContainer>{children}</PageContainer>
         </main>
 
