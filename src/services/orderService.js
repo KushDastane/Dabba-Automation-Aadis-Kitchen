@@ -9,12 +9,13 @@ import {
   where,
   getDocs,
   updateDoc,
+  orderBy,
 } from "firebase/firestore";
 import { getTodayKey } from "./menuService";
 import { notify } from "./notificationService";
 import { addLedgerEntry } from "./ledgerService";
 import { ADMIN_UID } from "../constants/admin";
-
+import { Timestamp } from "firebase/firestore";
 /* ===========================
    STUDENT: PLACE ORDER
 =========================== */
@@ -90,7 +91,7 @@ export const getTodayStudentOrder = async (studentId) => {
 
 /* ===========================
    ADMIN: CONFIRM ORDER
-   (THIS IS THE IMPORTANT FIX)
+
 =========================== */
 export const confirmOrder = async (orderId) => {
   const orderRef = doc(db, "orders", orderId);
@@ -141,4 +142,23 @@ export const confirmOrder = async (orderId) => {
       amount: total,
     },
   });
+};
+
+export const getStudentOrders = async (studentId) => {
+  const twoMonthsAgo = new Date();
+  twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+
+  const q = query(
+    collection(db, "orders"),
+    where("studentId", "==", studentId),
+    where("createdAt", ">=", Timestamp.fromDate(twoMonthsAgo)),
+    orderBy("createdAt", "desc")
+  );
+
+  const snap = await getDocs(q);
+
+  return snap.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 };

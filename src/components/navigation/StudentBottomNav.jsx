@@ -1,18 +1,15 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FiHome,
-  FiShoppingBag,
-  FiClock,
-  FiCreditCard,
-  FiUser,
-} from "react-icons/fi";
+import { FiHome, FiClock, FiUser } from "react-icons/fi";
+import { PiBowlFoodLight } from "react-icons/pi";
+import { PiCreditCard } from "react-icons/pi";
+
 
 const navItems = [
   { label: "Home", path: "/", icon: FiHome },
-  { label: "Order", path: "/order", icon: FiShoppingBag },
+  { label: "Order", path: "/order", icon: PiBowlFoodLight },
   { label: "History", path: "/history", icon: FiClock },
-  { label: "Khata", path: "/khata", icon: FiCreditCard },
+  { label: "Khata", path: "/khata", icon: PiCreditCard },
   { label: "Profile", path: "/profile", icon: FiUser },
 ];
 

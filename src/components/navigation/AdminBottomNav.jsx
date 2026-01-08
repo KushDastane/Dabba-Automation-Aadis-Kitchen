@@ -1,19 +1,18 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FiHome,
-  FiClipboard,
-  FiCreditCard,
-  FiBookOpen,
-  FiSettings,
-} from "react-icons/fi";
+import { FiHome, FiSettings } from "react-icons/fi";
+import { BiFoodMenu } from "react-icons/bi";
+import { PiCreditCard } from "react-icons/pi";
+import { IoRestaurantOutline } from "react-icons/io5";
 
+import { FaPeopleGroup } from "react-icons/fa6";
 const navItems = [
   { label: "Home", path: "/", icon: FiHome },
-  { label: "Orders", path: "/orders", icon: FiClipboard },
-  { label: "Menu", path: "/menu", icon: FiBookOpen },
-  { label: "Payments", path: "/payments", icon: FiCreditCard },
+  { label: "Orders", path: "/orders", icon: IoRestaurantOutline },
+  { label: "Menu", path: "/menu", icon: BiFoodMenu },
+  { label: "Payments", path: "/payments", icon: PiCreditCard },
   { label: "Settings", path: "/kitchen", icon: FiSettings },
+  { label: "Students", path: "/students", icon: FaPeopleGroup },
 ];
 
 export default function AdminBottomNav() {

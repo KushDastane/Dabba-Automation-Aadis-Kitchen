@@ -1,19 +1,18 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  FiHome,
-  FiClipboard,
-  FiBookOpen,
-  FiCreditCard,
-  FiSettings,
-} from "react-icons/fi";
+import { FiHome, FiSettings } from "react-icons/fi";
+import { FaPeopleGroup } from "react-icons/fa6";
+import { PiCreditCard } from "react-icons/pi";
+import { IoRestaurantOutline } from "react-icons/io5";
+import { BiFoodMenu } from "react-icons/bi";
 
 const nav = [
   { label: "Dashboard", path: "/", icon: FiHome },
-  { label: "Orders", path: "/orders", icon: FiClipboard },
-  { label: "Menu", path: "/menu", icon: FiBookOpen },
-  { label: "Payments", path: "/payments", icon: FiCreditCard },
+  { label: "Orders", path: "/orders", icon: IoRestaurantOutline },
+  { label: "Menu", path: "/menu", icon: BiFoodMenu },
+  { label: "Payments", path: "/payments", icon: PiCreditCard },
   { label: "Kitchen", path: "/kitchen", icon: FiSettings },
+  { label: "Students", path: "/students", icon: FaPeopleGroup },
 ];
 
 export default function AdminSidebar() {

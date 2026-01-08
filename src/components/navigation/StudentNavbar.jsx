@@ -1,21 +1,16 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  FiHome,
-  FiShoppingBag,
-  FiClock,
-  FiCreditCard,
-  FiUser,
-} from "react-icons/fi";
-
+import { FiHome, FiShoppingBag, FiClock, FiUser } from "react-icons/fi";
+import { PiCreditCard } from "react-icons/pi";
+import { PiBowlFoodLight } from "react-icons/pi";
 export default function StudentNavbar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const nav = [
     { label: "Home", path: "/", icon: FiHome },
-    { label: "Order", path: "/order", icon: FiShoppingBag },
+    { label: "Order", path: "/order", icon: PiBowlFoodLight },
     { label: "History", path: "/history", icon: FiClock },
-    { label: "Khata", path: "/khata", icon: FiCreditCard },
+    { label: "Khata", path: "/khata", icon: PiCreditCard },
     { label: "Profile", path: "/profile", icon: FiUser },
   ];
 

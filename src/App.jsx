@@ -22,6 +22,8 @@ import Orders from "./pages/admin/Orders";
 import Payments from "./pages/admin/Payments";
 import Menu from "./pages/admin/Menu";
 import KitchenSettings from "./pages/admin/KitchenSettings";
+import Students from "./pages/admin/Students";
+import StudentProfile from "./pages/admin/StudentProfile";
 
 export default function App() {
   const { loading, isAuthenticated, isProfileComplete, role } = useAuthUser();
@@ -39,6 +41,8 @@ export default function App() {
           <Route path="/menu" element={<Menu />} />
           <Route path="/kitchen" element={<KitchenSettings />} />
           <Route path="/payments" element={<Payments />} />
+          <Route path="/students" element={<Students />} />
+          <Route path="/students/:studentId" element={<StudentProfile />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AdminLayout>
