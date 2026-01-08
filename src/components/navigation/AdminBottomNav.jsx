@@ -1,58 +1,91 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { FiHome, FiClipboard, FiCreditCard, FiBookOpen, FiSettings } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FiHome,
+  FiClipboard,
+  FiCreditCard,
+  FiBookOpen,
+  FiSettings,
+} from "react-icons/fi";
+
+const navItems = [
+  { label: "Home", path: "/", icon: FiHome },
+  { label: "Orders", path: "/orders", icon: FiClipboard },
+  { label: "Menu", path: "/menu", icon: FiBookOpen },
+  { label: "Payments", path: "/payments", icon: FiCreditCard },
+  { label: "Settings", path: "/kitchen", icon: FiSettings },
+];
 
 export default function AdminBottomNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
-      <div className="max-w-md mx-auto flex justify-between px-6 py-2 lg:max-w-3xl">
-        <NavItem
-          icon={<FiHome />}
-          label="Home"
-          active={pathname === "/"}
-          onClick={() => navigate("/")}
-        />
-        <NavItem
-          icon={<FiClipboard />}
-          label="Orders"
-          active={pathname === "/orders"}
-          onClick={() => navigate("/orders")}
-        />
-        <NavItem
-          icon={<FiBookOpen />}
-          label="Menu"
-          active={pathname === "/menu"}
-          onClick={() => navigate("/menu")}
-        />
-        <NavItem
-          icon={<FiCreditCard />}
-          label="Payments"
-          active={pathname === "/payments"}
-          onClick={() => navigate("/payments")}
-        />
-        <NavItem
-          icon={<FiSettings />}
-          label="Settings"
-          active={pathname === "/kitchen"}
-          onClick={() => navigate("/kitchen")}
-        />
+    <nav className="fixed bottom-3 left-0 right-0 z-50">
+      <div className="mx-auto max-w-md px-4">
+        <div className="bg-white/90 backdrop-blur-xl rounded-2xl px-3 py-3 flex justify-between shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.path;
+
+            return (
+              <motion.button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                whileTap={{ scale: 0.965 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="relative flex-1 flex flex-col items-center justify-center"
+              >
+                {/* Icon – LIQUID */}
+                <motion.div
+                  animate={{
+                    y: active ? [-0.5, -2, -1.6] : [-1.6, -0.8, 0],
+                    color: active ? "#111827" : "#9ca3af",
+                    opacity: active ? 1 : 0.85,
+                  }}
+                  transition={{
+                    duration: active ? 0.32 : 0.38,
+                    ease: [0.16, 1, 0.3, 1], // liquid inertia
+                  }}
+                >
+                  <Icon size={22} strokeWidth={active ? 2.2 : 2} />
+                </motion.div>
+
+                {/* Label (active only) */}
+                <AnimatePresence>
+                  {active && (
+                    <motion.span
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      transition={{
+                        duration: 0.22,
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
+                      className="text-[11px] mt-0.5 font-medium text-gray-900"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+
+                {/* Underline indicator */}
+                {active && (
+                  <motion.div
+                    layoutId="admin-nav-underline"
+                    transition={{
+                      type: "tween",
+                      duration: 0.22,
+                      ease: [0.4, 0.0, 0.2, 1],
+                    }}
+                    className="absolute -bottom-1.5 w-5 h-[2.5px] rounded-full bg-yellow-400"
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
       </div>
     </nav>
-  );
-}
-
-function NavItem({ icon, label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex flex-col items-center text-xs ${
-        active ? "text-black" : "text-gray-500"
-      }`}
-    >
-      {icon}
-      <span className="mt-1">{label}</span>
-    </button>
   );
 }
