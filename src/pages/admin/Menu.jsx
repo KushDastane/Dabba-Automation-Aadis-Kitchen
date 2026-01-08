@@ -3,7 +3,7 @@ import PageHeader from "../../components/layout/PageHeader";
 import { db } from "../../firebase/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getTodayKey, getMenuForDate } from "../../services/menuService";
-
+import { FaPencilAlt, FaPen } from "react-icons/fa";
 const OTHER_SUGGESTIONS = ["Misal Pav", "Pav Bhaji", "Thalipeeth"];
 const FULL_ADDON_SUGGESTIONS = ["Dal Rice", "Kadhi Rice", "Biryani"];
 const FREE_ADDONS = ["Chatni", "Pickle", "Dahi", "Sweet"];
@@ -214,22 +214,23 @@ export default function Menu() {
 
     const menu = todayMenuData[slot];
     if (menu.type === "ROTI_SABZI" && menu.rotiSabzi) {
-      const sabzi = menu.rotiSabzi.sabzi;
+      const halfItems = menu.rotiSabzi.half?.items || [];
       const fullItems = menu.rotiSabzi.full?.items || [];
-      const addon = fullItems.find(
-        (item) => !item.includes("Chapati") && !item.includes("Sabzi")
-      );
       return {
         type: "Roti – Sabzi",
-        main: `${sabzi} Sabzi`,
-        addon: addon ? `+ ${addon}` : "",
-        price: `₹${menu.rotiSabzi.full?.price || 0}`,
+        half: {
+          items: halfItems.join(", "),
+          price: `₹${menu.rotiSabzi.half?.price || 0}`,
+        },
+        full: {
+          items: fullItems.join(", "),
+          price: `₹${menu.rotiSabzi.full?.price || 0}`,
+        },
       };
     } else if (menu.type === "OTHER" && menu.other) {
       return {
         type: "Other",
-        main: menu.other.name,
-        addon: "",
+        name: menu.other.name,
         price: `₹${menu.other.price || 0}`,
       };
     }
@@ -238,187 +239,275 @@ export default function Menu() {
 
   if (viewMode === "summary") {
     return (
-      <div className="pb-24">
-        <PageHeader name="Today's Menu" />
+  <div className="pt-7 px-6 pb-24">
+    <PageHeader name="Today's Menu" />
 
-        <div className="space-y-4">
-          {/* Lunch Card */}
-          {getMenuSummary("lunch") ? (
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-lg">Lunch Menu</h3>
-                <button
-                  onClick={() => startEditing("lunch")}
-                  className="text-blue-600 p-1"
-                >
-                  ✏️
-                </button>
-              </div>
-              <div className="text-gray-700">
-                <p className="font-medium">{getMenuSummary("lunch").main}</p>
-                {getMenuSummary("lunch").addon && (
-                  <p className="text-sm text-gray-600">
-                    {getMenuSummary("lunch").addon}
-                  </p>
-                )}
-                <p className="text-sm font-medium text-green-600 mt-1">
-                  Full: {getMenuSummary("lunch").price}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-300">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold text-lg text-gray-700">
-                    Lunch Menu
-                  </h3>
-                  <p className="text-gray-500 text-sm">Not set yet</p>
-                </div>
-                <button
-                  onClick={() => startEditing("lunch")}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
-                >
-                  Set Menu
-                </button>
-              </div>
-            </div>
-          )}
+    <div className="mt-6 space-y-6">
+      {/* LUNCH */}
+      {getMenuSummary("lunch") ? (
+        <div className="rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Lunch Menu
+            </h3>
 
-          {/* Dinner Card */}
-          {getMenuSummary("dinner") ? (
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-lg">Dinner Menu</h3>
-                <button
-                  onClick={() => startEditing("dinner")}
-                  className="text-blue-600 p-1"
-                >
-                  ✏️
-                </button>
-              </div>
-              <div className="text-gray-700">
-                <p className="font-medium">{getMenuSummary("dinner").main}</p>
-                {getMenuSummary("dinner").addon && (
-                  <p className="text-sm text-gray-600">
-                    {getMenuSummary("dinner").addon}
-                  </p>
-                )}
-                <p className="text-sm font-medium text-green-600 mt-1">
-                  Full: {getMenuSummary("dinner").price}
+            <button
+              onClick={() => startEditing("lunch")}
+              className="p-2 rounded-xl bg-yellow-100 hover:bg-yellow-200 transition"
+              title="Edit Lunch Menu"
+            >
+              <FaPen className="text-yellow-800 text-sm" />
+            </button>
+          </div>
+
+          <div className="text-sm text-gray-700 space-y-1">
+            {getMenuSummary("lunch").type === "Roti – Sabzi" ? (
+              <>
+                <p className="text-gray-800">
+                  <span className="font-medium">Half:</span>{" "}
+                  {getMenuSummary("lunch").half.items} —{" "}
+                  <span className="text-emerald-600 font-medium">
+                    {getMenuSummary("lunch").half.price}
+                  </span>
                 </p>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-300">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold text-lg text-gray-700">
-                    Dinner Menu
-                  </h3>
-                  <p className="text-gray-500 text-sm">Not set yet</p>
-                </div>
-                <button
-                  onClick={() => startEditing("dinner")}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
-                >
-                  Set Menu
-                </button>
-              </div>
-            </div>
-          )}
+                <p className="text-gray-800">
+                  <span className="font-medium">Full:</span>{" "}
+                  {getMenuSummary("lunch").full.items} —{" "}
+                  <span className="text-emerald-600 font-medium">
+                    {getMenuSummary("lunch").full.price}
+                  </span>
+                </p>
+              </>
+            ) : (
+              <p className="text-gray-800">
+                <span className="font-medium">
+                  {getMenuSummary("lunch").name}
+                </span>{" "}
+                —{" "}
+                <span className="text-emerald-600 font-medium">
+                  {getMenuSummary("lunch").price}
+                </span>
+              </p>
+            )}
+          </div>
         </div>
-      </div>
-    );
+      ) : (
+        <div className="rounded-3xl bg-gray-50/70 p-5 ring-1 ring-dashed ring-black/10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Lunch Menu
+              </h3>
+              <p className="text-sm text-gray-500">Not set yet</p>
+            </div>
+
+            <button
+              onClick={() => startEditing("lunch")}
+              className="rounded-xl bg-yellow-100 px-5 py-2.5 text-sm font-medium
+                         text-yellow-900 hover:bg-yellow-200 transition"
+            >
+              Set Menu
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* DINNER */}
+      {getMenuSummary("dinner") ? (
+        <div className="rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Dinner Menu
+            </h3>
+
+            <button
+              onClick={() => startEditing("dinner")}
+              className="p-2 rounded-xl bg-yellow-100 hover:bg-yellow-200 transition"
+              title="Edit Dinner Menu"
+            >
+              <FaPen className="text-yellow-800 text-sm" />
+            </button>
+          </div>
+
+          <div className="text-sm text-gray-700 space-y-1">
+            {getMenuSummary("dinner").type === "Roti – Sabzi" ? (
+              <>
+                <p className="text-gray-800">
+                  <span className="font-medium">Half:</span>{" "}
+                  {getMenuSummary("dinner").half.items} —{" "}
+                  <span className="text-emerald-600 font-medium">
+                    {getMenuSummary("dinner").half.price}
+                  </span>
+                </p>
+                <p className="text-gray-800">
+                  <span className="font-medium">Full:</span>{" "}
+                  {getMenuSummary("dinner").full.items} —{" "}
+                  <span className="text-emerald-600 font-medium">
+                    {getMenuSummary("dinner").full.price}
+                  </span>
+                </p>
+              </>
+            ) : (
+              <p className="text-gray-800">
+                <span className="font-medium">
+                  {getMenuSummary("dinner").name}
+                </span>{" "}
+                —{" "}
+                <span className="text-emerald-600 font-medium">
+                  {getMenuSummary("dinner").price}
+                </span>
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-3xl bg-gray-50/70 p-5 ring-1 ring-dashed ring-black/10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Dinner Menu
+              </h3>
+              <p className="text-sm text-gray-500">Not set yet</p>
+            </div>
+
+            <button
+              onClick={() => startEditing("dinner")}
+              className="rounded-xl bg-yellow-100 px-5 py-2.5 text-sm font-medium
+                         text-yellow-900 hover:bg-yellow-200 transition"
+            >
+              Set Menu
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
   }
 
   // Edit mode
   return (
-    <div className="pb-24">
-      <div className="flex items-center justify-between mb-4">
+    <div className="pb-24 pt-8 px-6">
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={cancelEditing}
-          className="text-blue-600 flex items-center gap-2"
+          className="text-yellow-700 cursor-pointer transition hover:text-yellow-900 flex items-center gap-2 transition-colors"
         >
           ← Back to Summary
         </button>
-        <h2 className="font-semibold text-lg">
-          Edit {mealSlot === "lunch" ? "Lunch" : "Dinner"} Menu
-        </h2>
       </div>
 
       {/* Meal Type */}
-      <div className="flex gap-3 mb-4">
-        {[
-          { label: "Roti – Sabzi", value: "ROTI_SABZI" },
-          { label: "Other", value: "OTHER" },
-        ].map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setType(opt.value)}
-            className={`flex-1 py-2 rounded-lg ${
-              type === opt.value ? "bg-black text-white" : "bg-gray-100"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
+      <div className="mb-5 rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
+        <h4 className="text-sm font-semibold text-gray-800 mb-4 tracking-wide">
+          MEAL TYPE
+        </h4>
+
+        <div className="flex gap-3 ">
+          {[
+            { label: "Roti – Sabzi", value: "ROTI_SABZI" },
+            { label: "Other", value: "OTHER" },
+          ].map((opt) => {
+            const active = type === opt.value;
+
+            return (
+              <button
+                key={opt.value}
+                onClick={() => setType(opt.value)}
+                className={`flex-1 py-4 rounded-2xl text-sm font-medium transition-all duration-200 cursor-pointer
+            ${
+              active
+                ? "bg-yellow-100 text-yellow-900 ring-2 ring-yellow-300 shadow-inner"
+                : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+            }
+          `}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ROTI SABZI */}
       {type === "ROTI_SABZI" && (
         <>
-          <div className="bg-white p-4 rounded-xl mb-4">
-            <h4 className="font-medium mb-2">Sabzi</h4>
+          {/* SABZI */}
+          <div className="mb-5 rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
+            <h4 className="text-sm font-semibold text-gray-800 mb-3 tracking-wide">
+              SABZI
+            </h4>
+
             <input
               placeholder="e.g. Gobi"
               value={sabzi}
               onChange={(e) => setSabzi(e.target.value)}
-              className="border p-2 rounded-lg w-full"
+              className="w-full rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-800
+                 ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300 outline-none
+                 transition"
             />
           </div>
 
-          <div className="bg-white p-4 rounded-xl mb-4">
-            <h4 className="font-medium">Half Dabba</h4>
-            <p className="text-sm text-gray-500">
+          {/* HALF DABBA */}
+          <div className="mb-5 rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
+            <h4 className="text-sm font-semibold text-gray-800 mb-1 tracking-wide">
+              HALF DABBA
+            </h4>
+            <p className="text-xs text-gray-500 mb-3">
               4 Chapati + {sabzi || "Sabzi"}
             </p>
+
             <input
               type="number"
               value={halfPrice}
               onChange={(e) => setHalfPrice(e.target.value)}
-              className="border p-2 rounded-lg w-full mt-2"
+              className="w-full rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-800
+                 ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300 outline-none
+                 transition"
             />
           </div>
 
-          <div className="bg-white p-4 rounded-xl mb-4">
-            <h4 className="font-medium mb-1">Full Dabba</h4>
-            <p className="text-sm text-gray-500 mb-2">
+          {/* FULL DABBA */}
+          <div className="mb-5 rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
+            <h4 className="text-sm font-semibold text-gray-800 mb-1 tracking-wide">
+              FULL DABBA
+            </h4>
+            <p className="text-xs text-gray-500 mb-4">
               4 Chapati + {sabzi || "Sabzi"}
             </p>
 
-            <div className="flex flex-wrap gap-2 mb-2">
-              {FULL_ADDON_SUGGESTIONS.map((a) => (
-                <button
-                  key={a}
-                  onClick={() => {
-                    setFullAddon(a);
-                    setCustomFullAddon("");
-                    setShowCustomAddon(false);
-                  }}
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    fullAddon === a ? "bg-green-600 text-white" : "bg-gray-100"
-                  }`}
-                >
-                  + {a}
-                </button>
-              ))}
+            {/* ADD-ONS */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {FULL_ADDON_SUGGESTIONS.map((a) => {
+                const active = fullAddon === a;
+                return (
+                  <button
+                    key={a}
+                    onClick={() => {
+                      setFullAddon(a);
+                      setCustomFullAddon("");
+                      setShowCustomAddon(false);
+                    }}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer
+              ${
+                active
+                  ? "bg-emerald-100 text-emerald-900 ring-2 ring-emerald-300"
+                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+              }`}
+                  >
+                    + {a}
+                  </button>
+                );
+              })}
+
               <button
                 onClick={() => {
                   setFullAddon("");
                   setShowCustomAddon(true);
                 }}
-                className="px-3 py-1 rounded-full bg-gray-200 text-sm"
+                className="px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200
+                   text-sm font-medium transition"
               >
                 + Other
               </button>
@@ -429,7 +518,9 @@ export default function Menu() {
                 placeholder="Other item"
                 value={customFullAddon}
                 onChange={(e) => setCustomFullAddon(e.target.value)}
-                className="border p-2 rounded-lg w-full mb-2"
+                className="mb-4 w-full rounded-2xl bg-gray-50 px-4 py-3 text-sm
+                   ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300
+                   outline-none transition"
               />
             )}
 
@@ -437,26 +528,36 @@ export default function Menu() {
               type="number"
               value={fullPrice}
               onChange={(e) => setFullPrice(e.target.value)}
-              className="border p-2 rounded-lg w-full"
+              className="w-full rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-800
+                 ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300 outline-none
+                 transition"
             />
           </div>
 
-          <div className="bg-white p-4 rounded-xl mb-4">
-            <h4 className="font-medium mb-2">Free Add-ons</h4>
+          {/* FREE ADD-ONS */}
+          <div className="mb-5 rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
+            <h4 className="text-sm font-semibold text-gray-800 mb-4 tracking-wide">
+              FREE ADD-ONS
+            </h4>
+
             <div className="flex flex-wrap gap-2">
-              {FREE_ADDONS.map((a) => (
-                <button
-                  key={a}
-                  onClick={() => toggleFreeAddon(a)}
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    freeAddons.includes(a)
-                      ? "bg-black text-white"
-                      : "bg-gray-100"
-                  }`}
-                >
-                  {a}
-                </button>
-              ))}
+              {FREE_ADDONS.map((a) => {
+                const active = freeAddons.includes(a);
+                return (
+                  <button
+                    key={a}
+                    onClick={() => toggleFreeAddon(a)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer
+              ${
+                active
+                  ? "bg-yellow-100 text-yellow-900 ring-2 ring-yellow-300"
+                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+              }`}
+                  >
+                    {a}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </>
@@ -464,86 +565,141 @@ export default function Menu() {
 
       {/* OTHER */}
       {type === "OTHER" && (
-        <div className="bg-white p-4 rounded-xl mb-4">
-          <div className="flex flex-wrap gap-2 mb-2">
-            {OTHER_SUGGESTIONS.map((o) => (
-              <button
-                key={o}
-                onClick={() => {
-                  setOtherName(o);
-                  setShowOtherInput(false);
-                }}
-                className={`px-3 py-1 rounded-full ${
-                  otherName === o ? "bg-black text-white" : "bg-gray-100"
-                }`}
-              >
-                {o}
-              </button>
-            ))}
+        <div className="mb-5 rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
+          <h4 className="text-sm font-semibold text-gray-800 mb-4 tracking-wide">
+            OTHER MEAL
+          </h4>
+
+          {/* SUGGESTIONS */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {OTHER_SUGGESTIONS.map((o) => {
+              const active = otherName === o;
+
+              return (
+                <button
+                  key={o}
+                  onClick={() => {
+                    setOtherName(o);
+                    setShowOtherInput(false);
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all
+              ${
+                active
+                  ? "bg-yellow-100 text-yellow-900 ring-2 ring-yellow-300"
+                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+              }`}
+                >
+                  {o}
+                </button>
+              );
+            })}
+
             <button
               onClick={() => {
                 setOtherName("");
                 setShowOtherInput(true);
               }}
-              className="px-3 py-1 rounded-full bg-gray-200"
+              className="px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200
+                   text-sm font-medium transition"
             >
-              Other
+              + Other
             </button>
           </div>
 
+          {/* CUSTOM ITEM */}
           {showOtherInput && (
             <input
               placeholder="Item name"
               value={otherName}
               onChange={(e) => setOtherName(e.target.value)}
-              className="border p-2 rounded-lg w-full mb-2"
+              className="mb-4 w-full rounded-2xl bg-gray-50 px-4 py-3 text-sm
+                   ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300
+                   outline-none transition"
             />
           )}
 
+          {/* PRICE */}
           <input
             type="number"
             placeholder="Price"
             value={otherPrice}
             onChange={(e) => setOtherPrice(e.target.value)}
-            className="border p-2 rounded-lg w-full"
+            className="w-full rounded-2xl bg-gray-50 px-4 py-3 text-sm
+                 ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300
+                 outline-none transition"
           />
         </div>
       )}
 
       {/* EXTRAS */}
       {type && (
-        <div className="bg-white p-4 rounded-xl mb-6">
-          <h4 className="font-medium mb-2">Extras</h4>
+        <div className="mb-6 rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
+          <h4 className="text-sm font-semibold text-gray-800 mb-4 tracking-wide">
+            EXTRAS
+          </h4>
+
           {extras.map((e, i) => (
-            <div key={i} className="flex gap-2 mb-2">
+            <div
+              key={i}
+              className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center"
+            >
+              {/* ITEM NAME */}
               <input
                 placeholder="Item"
                 value={e.name}
                 onChange={(ev) => updateExtra(i, "name", ev.target.value)}
-                className="border p-2 rounded-lg w-1/2"
+                className="flex-1 rounded-2xl bg-gray-50 px-4 py-3 text-sm
+                     ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300
+                     outline-none transition"
               />
-              <input
-                type="number"
-                placeholder="Price"
-                value={e.price}
-                onChange={(ev) => updateExtra(i, "price", ev.target.value)}
-                className="border p-2 rounded-lg w-1/3"
-              />
-              <button onClick={() => removeExtra(i)} className="text-red-500">
-                ✕
-              </button>
+
+              {/* PRICE + REMOVE */}
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Price"
+                  value={e.price}
+                  onChange={(ev) => updateExtra(i, "price", ev.target.value)}
+                  className="w-28 rounded-2xl bg-gray-50 px-4 py-3 text-sm
+                       ring-1 ring-black/10 focus:ring-2 focus:ring-yellow-300
+                       outline-none transition"
+                />
+
+                <button
+                  onClick={() => removeExtra(i)}
+                  className="flex items-center justify-center rounded-2xl
+                       bg-red-100 text-red-700 hover:bg-red-200
+                       px-4 py-3 transition"
+                  title="Remove extra"
+                >
+                  ×
+                </button>
+              </div>
             </div>
           ))}
-          <button onClick={addExtraRow} className="text-sm text-blue-600">
+
+          {/* ADD EXTRA */}
+          <button
+            onClick={addExtraRow}
+            className="mt-2 inline-flex items-center gap-2 rounded-xl
+                 bg-yellow-100 px-4 py-2 text-sm font-medium
+                 text-yellow-900 hover:bg-yellow-200 transition cursor-pointer"
+          >
             + Add Extra
           </button>
         </div>
       )}
 
-      <div className="fixed bottom-16 left-0 right-0 px-4">
+      {/* SAVE BUTTON */}
+      <div className="mt-10 mb-1 ">
         <button
           onClick={saveMenu}
-          className="w-full bg-green-600 text-white py-3 rounded-xl"
+          className="
+      w-full rounded-2xl
+      bg-emerald-500 hover:bg-emerald-600
+      text-white py-4 text-base font-semibold
+      shadow-sm transition cursor-pointer
+    "
         >
           Save {mealSlot === "lunch" ? "Lunch" : "Dinner"} Menu
         </button>

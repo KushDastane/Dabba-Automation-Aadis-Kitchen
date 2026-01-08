@@ -1,8 +1,6 @@
-# TODO: Make Student Dashboard Responsive
+# TODO: Update Admin Menu Summary to Show Half and Full Portions
 
-- [x] Adjust main container for responsive padding and centering
-- [x] Update hero greeting for better desktop layout
-- [x] Modify card margins and widths for desktop
-- [x] Enhance weekly summary grid for desktop
-- [x] Scale text and buttons for readability
-- [x] Test UI on mobile and desktop emulators
+- [x] Update `getMenuSummary` function to return detailed half and full info (items and prices) for Roti-Sabzi meals, keep Other as is.
+- [x] Modify lunch summary card JSX to display "Half: [items] - ₹[price]" and "Full: [items] - ₹[price]" for Roti-Sabzi, or "[name] - ₹[price]" for Other.
+- [x] Modify dinner summary card JSX to display "Half: [items] - ₹[price]" and "Full: [items] - ₹[price]" for Roti-Sabzi, or "[name] - ₹[price]" for Other.
+- [x] Verify the summary displays correctly for both meal types and slots.
