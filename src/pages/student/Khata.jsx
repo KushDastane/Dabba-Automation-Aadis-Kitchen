@@ -107,125 +107,144 @@ export default function Khata() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="pb-24 bg-[#faf9f6] min-h-screen">
-      <PageHeader name="My Khata" />
+    <div className="pb-28  min-h-screen">
+      <div className="max-w-7xl mx-auto px-4">
+        <PageHeader name="My Khata" />
 
-      {/* SUMMARY */}
-      <div className="bg-white rounded-xl p-4 mb-6 shadow-sm">
-        <p className="text-xs text-gray-500">Current Balance</p>
-        <h2 className="text-3xl font-semibold mt-1">
-          ₹ {summary?.balance ?? 0}
-        </h2>
-        <p className="text-xs text-gray-400 mt-1">
-          Credit ₹{summary?.credit ?? 0} • Debit ₹{summary?.debit ?? 0}
-        </p>
+        {/* SUMMARY */}
+        <div className="mb-8 rounded-3xl bg-white/70 backdrop-blur-md p-5 ring-1 ring-black/5 shadow-sm">
+          <p className="text-xs uppercase tracking-wide text-gray-500">
+            Current Balance
+          </p>
 
-        <button
-          onClick={() => navigate("/add-payment")}
-          className="w-full bg-yellow-400 text-black py-3 rounded-xl mt-4 font-medium"
-        >
-          Add Money →
-        </button>
-      </div>
+          <h2 className="mt-1 text-3xl font-semibold text-gray-900">
+            ₹ {summary?.balance ?? 0}
+          </h2>
 
-      {/* 🔔 PAYMENT VERIFICATION (PENDING ONLY) */}
-      {pendingPayments.length > 0 && (
-        <>
-          <h3 className="text-xs text-gray-500 mb-2">Payment Verification</h3>
+          <p className="mt-1 text-xs text-gray-400">
+            Credit ₹{summary?.credit ?? 0} • Debit ₹{summary?.debit ?? 0}
+          </p>
 
-          {["today", "yesterday", "older"].map(
-            (key) =>
-              groupedPending[key].length > 0 && (
-                <div key={key} className="mb-4">
-                  <p className="text-xs text-gray-400 mb-2 capitalize">{key}</p>
+          <button
+            onClick={() => navigate("/add-payment")}
+            className="mt-5 w-full rounded-2xl bg-yellow-400 py-3 font-medium text-black hover:bg-yellow-500 transition"
+          >
+            Add Money
+          </button>
+        </div>
 
-                  <div className="space-y-3">
-                    {groupedPending[key].map((p) => (
-                      <div
-                        key={p.id}
-                        className="bg-white rounded-xl p-4 shadow-sm"
-                      >
-                        <div className="flex justify-between items-center">
-                          <p className="font-medium">
-                            BALANCE ADDITION – ₹{p.amount}
+        {/* PENDING PAYMENTS */}
+        {pendingPayments.length > 0 && (
+          <div className="mb-10">
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-500">
+              Payment Verification
+            </h3>
+
+            {["today", "yesterday", "older"].map(
+              (key) =>
+                groupedPending[key].length > 0 && (
+                  <div key={key} className="mb-6">
+                    <p className="mb-3 text-xs font-medium text-gray-400 capitalize">
+                      {key}
+                    </p>
+
+                    <div className="space-y-3">
+                      {groupedPending[key].map((p) => (
+                        <div
+                          key={p.id}
+                          className="rounded-2xl bg-white/70 backdrop-blur-md p-4 ring-1 ring-yellow-200 shadow-sm"
+                        >
+                          <div className="flex justify-between items-start">
+                            <p className="font-medium text-gray-900">
+                              Balance Addition — ₹{p.amount}
+                            </p>
+
+                            <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                              Pending
+                            </span>
+                          </div>
+
+                          <p className="mt-1 text-xs text-gray-400">
+                            {formatDate(p.createdAt)}
                           </p>
-                          <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">
-                            Pending Verification
-                          </span>
                         </div>
-
-                        <p className="text-xs text-gray-400 mt-1">
-                          {formatDate(p.createdAt)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-          )}
-        </>
-      )}
-
-      {/* TRANSACTION HISTORY */}
-      <h3 className="text-xs text-gray-500 mb-2">Transaction History</h3>
-
-      {/* REJECTED PAYMENTS */}
-      {["today", "yesterday", "older"].map(
-        (key) =>
-          groupedRejected[key].length > 0 && (
-            <div key={key} className="mb-4">
-              <p className="text-xs text-gray-400 mb-2 capitalize">{key}</p>
-
-              <div className="space-y-3">
-                {groupedRejected[key].map((p) => (
-                  <div
-                    key={p.id}
-                    className="bg-white rounded-xl p-4 shadow-sm border border-red-200"
-                  >
-                    <div className="flex justify-between items-center">
-                      <p className="font-medium text-red-700">
-                        BALANCE ADDITION – ₹{p.amount}
-                      </p>
-                      <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-600">
-                        Rejected
-                      </span>
+                      ))}
                     </div>
-
-                    <p className="text-xs text-gray-400 mt-1">
-                      {formatDate(p.createdAt)}
-                    </p>
-
-                    <p className="text-xs text-red-600 mt-2">
-                      Contact admin if you think this is a mistake
-                    </p>
                   </div>
-                ))}
-              </div>
-            </div>
-          )
-      )}
+                )
+            )}
+          </div>
+        )}
 
-      {/* LEDGER ENTRIES */}
-      {["today", "yesterday", "older"].map(
-        (key) =>
-          groupedLedger[key].length > 0 && (
-            <div key={key} className="mb-4">
-              <p className="text-xs text-gray-400 mb-2 capitalize">{key}</p>
+        {/* TRANSACTION HISTORY */}
+        <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-500">
+          Transaction History
+        </h3>
 
-              <div className="space-y-3">
-                {groupedLedger[key].map((entry) => (
-                  <LedgerEntryCard
-                    key={entry.id}
-                    type={entry.type}
-                    amount={entry.amount}
-                    label={getLedgerLabel(entry)}
-                    date={formatDate(entry.createdAt)}
-                  />
-                ))}
+        {/* REJECTED PAYMENTS */}
+        {["today", "yesterday", "older"].map(
+          (key) =>
+            groupedRejected[key].length > 0 && (
+              <div key={key} className="mb-6">
+                <p className="mb-3 text-xs font-medium text-gray-400 capitalize">
+                  {key}
+                </p>
+
+                <div className="space-y-3">
+                  {groupedRejected[key].map((p) => (
+                    <div
+                      key={p.id}
+                      className="rounded-2xl bg-white/70 backdrop-blur-md p-4 ring-1 ring-red-200 shadow-sm"
+                    >
+                      <div className="flex justify-between items-start">
+                        <p className="font-medium text-red-700">
+                          Balance Addition — ₹{p.amount}
+                        </p>
+
+                        <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-600">
+                          Rejected
+                        </span>
+                      </div>
+
+                      <p className="mt-1 text-xs text-gray-400">
+                        {formatDate(p.createdAt)}
+                      </p>
+
+                      <p className="mt-2 text-xs text-red-600">
+                        Contact admin if this seems incorrect
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )
-      )}
+            )
+        )}
+
+        {/* LEDGER */}
+        {["today", "yesterday", "older"].map(
+          (key) =>
+            groupedLedger[key].length > 0 && (
+              <div key={key} className="mb-6">
+                <p className="mb-3 text-xs font-medium text-gray-400 capitalize">
+                  {key}
+                </p>
+
+                <div className="space-y-3">
+                  {groupedLedger[key].map((entry) => (
+                    <LedgerEntryCard
+                      key={entry.id}
+                      type={entry.type}
+                      amount={entry.amount}
+                      label={getLedgerLabel(entry)}
+                      date={formatDate(entry.createdAt)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+        )}
+      </div>
     </div>
   );
+
 }

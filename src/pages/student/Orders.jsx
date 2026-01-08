@@ -8,6 +8,7 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { useAuthUser } from "../../hooks/useAuthUser";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 /* ---------------- DATE HELPERS ---------------- */
 
@@ -127,137 +128,138 @@ export default function StudentOrders() {
 
   /* ---------------- UI ---------------- */
 
- return (
-  <div className="pb-24 bg-[#faf9f6] min-h-screen px-4">
-    {/* HEADER */}
-    <div className="mb-6">
-      <h2 className="text-xl font-semibold text-gray-900">
-        My Thali History
-      </h2>
-      <p className="text-sm text-gray-600">
-        Track your daily tiffins and monthly expenses
-      </p>
-    </div>
+  return (
+    <div className="pb-28  min-h-screen">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* HEADER */}
+        <div className="pt-4 mb-6">
+          <h2 className="text-2xl font-semibold text-gray-900">
+            My Thali History
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Your daily meals & monthly spending at a glance
+          </p>
+        </div>
 
-    {/* STATS */}
-    <div className="grid grid-cols-2 gap-3 mb-6">
-      <div className="rounded-3xl bg-white/70 backdrop-blur-md p-4 ring-1 ring-black/5 shadow-sm">
-        <p className="text-xs text-gray-500">
-          Total Expense (This Month)
-        </p>
-        <p className="text-xl font-semibold text-gray-900 mt-1">
-          ₹{totalExpense}
-        </p>
-      </div>
+        {/* STATS */}
+        <div className="grid grid-cols-2 gap-4 mb-7">
+          <div className="rounded-3xl bg-white/70 backdrop-blur-md p-4 ring-1 ring-black/5 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Monthly Spend
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900">
+              ₹{totalExpense}
+            </p>
+          </div>
 
-      <div className="rounded-3xl bg-yellow-50 p-4 ring-1 ring-yellow-200 shadow-sm">
-        <p className="text-xs text-yellow-800">
-          Tiffins This Month
-        </p>
-        <p className="text-xl font-semibold text-yellow-900 mt-1">
-          {totalTiffins}
-        </p>
-      </div>
-    </div>
+          <div className="rounded-3xl bg-yellow-50 p-4 ring-1 ring-yellow-200 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-yellow-800">
+              Tiffins This Month
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-yellow-900">
+              {totalTiffins}
+            </p>
+          </div>
+        </div>
 
-    {/* FILTER */}
-    <div className="flex gap-2 mb-6">
-      {[
-        { key: "ALL", label: "All Orders" },
-        { key: "THIS_MONTH", label: "This Month" },
-      ].map((f) => {
-        const active = monthFilter === f.key;
-        return (
-          <button
-            key={f.key}
-            onClick={() => setMonthFilter(f.key)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition
-              ${
-                active
-                  ? "bg-yellow-100 text-yellow-900 ring-2 ring-yellow-300"
-                  : "bg-white text-gray-700 ring-1 ring-black/5 hover:bg-gray-50"
-              }`}
-          >
-            {f.label}
-          </button>
-        );
-      })}
-    </div>
+        {/* FILTER */}
+        <div className="flex gap-2 mb-8">
+          {[
+            { key: "ALL", label: "All Orders" },
+            { key: "THIS_MONTH", label: "This Month" },
+          ].map((f) => {
+            const active = monthFilter === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setMonthFilter(f.key)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition
+                ${
+                  active
+                    ? "bg-yellow-100 text-yellow-900 ring-2 ring-yellow-300"
+                    : "bg-white/70 text-gray-700 ring-1 ring-black/5 hover:bg-gray-50"
+                }`}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
 
-    {/* ORDERS BY DATE */}
-    {["today", "yesterday", "older"].map(
-      (key) =>
-        groupedOrders[key].length > 0 && (
-          <div key={key} className="mb-8">
-            {/* SECTION TITLE */}
-            <h4 className="mb-3 text-xs font-semibold tracking-widest text-gray-500 uppercase">
-              {key}
-            </h4>
+        {/* ORDER SECTIONS */}
+        {["today", "yesterday", "older"].map(
+          (key) =>
+            groupedOrders[key].length > 0 && (
+              <div key={key} className="mb-10">
+                {/* SECTION HEADING — LEFT ALIGNED */}
+                <h4 className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-500">
+                  {key}
+                </h4>
 
-            <div className="space-y-4">
-              {groupedOrders[key].map((o) => {
-                const { day, month } = formatDayPill(o.createdAt);
-                const price = Number(o.items?.unitPrice || 0);
-                const qty = Number(o.items?.quantity || 0);
+                <div className="space-y-4">
+                  {groupedOrders[key].map((o) => {
+                    const { day, month } = formatDayPill(o.createdAt);
+                    const price = Number(o.items?.unitPrice || 0);
+                    const qty = Number(o.items?.quantity || 0);
 
-                return (
-                  <div
-                    key={o.id}
-                    className="rounded-3xl bg-white/70 backdrop-blur-md p-4 ring-1 ring-black/5 shadow-sm flex gap-4"
-                  >
-                    {/* DATE PILL */}
-                    <div className="w-12 shrink-0 rounded-2xl bg-gray-50 py-2 text-center ring-1 ring-black/5">
-                      <p className="text-[10px] text-gray-500">
-                        {month}
-                      </p>
-                      <p className="text-lg font-semibold text-gray-900">
-                        {day}
-                      </p>
-                    </div>
-
-                    {/* CONTENT */}
-                    <div className="flex-1">
-                      <div className="flex justify-between gap-3">
-                        <div>
-                          <p className="text-xs text-gray-400">
-                            {o.mealType}
+                    return (
+                      <div
+                        key={o.id}
+                        className="rounded-3xl bg-white/70 backdrop-blur-md p-4 ring-1 ring-black/5 shadow-sm flex gap-4"
+                      >
+                        {/* DATE */}
+                        <div className="w-14 shrink-0 rounded-2xl bg-gray-50 py-2 text-center ring-1 ring-black/5">
+                          <p className="text-[10px] tracking-wide text-gray-500">
+                            {month}
                           </p>
-                          <p className="font-medium text-gray-900">
-                            {o.items?.item}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {qty} × ₹{price}
+                          <p className="text-xl font-semibold text-gray-900">
+                            {day}
                           </p>
                         </div>
 
-                        <div className="text-right">
-                          <p className="font-semibold text-gray-900">
-                            ₹{price * qty}
-                          </p>
-                          <span
-                            className={`inline-block mt-1 text-xs px-2 py-1 rounded-full ${statusStyle(
-                              o.status
-                            )}`}
-                          >
-                            {o.status}
-                          </span>
+                        {/* CONTENT */}
+                        <div className="flex-1">
+                          <div className="flex justify-between gap-4">
+                            <div>
+                              <p className="text-xs text-gray-400">
+                                {o.mealType}
+                              </p>
+                              <p className="font-medium text-gray-900">
+                                {o.items?.item}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {qty} × ₹{price}
+                              </p>
+                            </div>
+
+                            <div className="text-right">
+                              <p className="text-lg font-semibold text-gray-900">
+                                ₹{price * qty}
+                              </p>
+                              <span
+                                className={`inline-block mt-1 text-xs px-2 py-1 rounded-full ${statusStyle(
+                                  o.status
+                                )}`}
+                              >
+                                {o.status}
+                              </span>
+                            </div>
+                          </div>
+
+                          {o.status === "PENDING" && (
+                            <p className="mt-2 text-xs text-red-500">
+                              Order cannot be changed after confirmation
+                            </p>
+                          )}
                         </div>
                       </div>
-
-                      {o.status === "PENDING" && (
-                        <p className="mt-2 text-xs text-red-500">
-                          Once confirmed, order cannot be changed
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )
-    )}
-  </div>
-);
-
+                    );
+                  })}
+                </div>
+              </div>
+            )
+        )}
+      </div>
+    </div>
+  );
 }

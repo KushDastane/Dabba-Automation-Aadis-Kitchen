@@ -197,7 +197,7 @@ export default function PlaceOrder() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="pb-36 bg-[#faf9f6] min-h-screen">
+    <div className="pb-36  min-h-screen">
       <div className="max-w-7xl mx-auto px-4 pb-36">
         {/* HEADER */}
         <div className="px-4 pt-5 mb-6">
