@@ -2,3 +2,7 @@
 .btn {
   @apply px-4 py-2 bg-blue-600 text-white rounded mr-2;
 }
+/* Hide Google reCAPTCHA badge */
+.grecaptcha-badge {
+  visibility: hidden;
+}

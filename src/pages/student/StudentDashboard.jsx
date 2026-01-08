@@ -80,31 +80,41 @@ export default function StudentDashboard() {
       .map((l) => l.createdAt?.toDate?.().toISOString().split("T")[0])
   );
 
-  return (
-    <div className="pb-28 space-y-4">
-      <PageHeader name={profile?.name} />
+return (
+  <div className="pb-28 space-y-6">
+    {/* HEADER */}
+    <PageHeader name={profile?.name} />
 
-      {/* KITCHEN STATUS */}
-      <div className={`rounded-xl p-3 text-sm ${kitchenStyle}`}>
-        {kitchenStatusText}
-      </div>
+    {/* KITCHEN STATUS */}
+    <div
+      className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 ${kitchenStyle}`}
+    >
+      {kitchenStatusText}
+    </div>
 
-      {/* TODAY ORDER STATUS */}
-      <div className="bg-white rounded-xl p-4 shadow-sm">
-        <div className="flex justify-between items-center">
+    {/* TODAY + WALLET */}
+    <div className="grid gap-4 md:grid-cols-3">
+      {/* TODAY ORDER */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm md:col-span-2">
+        <div className="flex justify-between items-start">
           <div>
-            <p className="text-sm text-gray-500">
+            <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+              {todayOrder?.status === "CONFIRMED"
+                ? "OUT FOR DELIVERY"
+                : "NOT PLACED"}
+            </span>
+
+            <h3 className="text-lg font-semibold mt-3">
               Today’s {mealSlot === "lunch" ? "Lunch" : "Dinner"}
-            </p>
-            <h3 className="text-lg font-semibold mt-1">
-              {todayOrder?.status ?? "Not Placed"}
             </h3>
 
-            {!todayOrder && orderingClosed && (
-              <p className="text-xs text-red-500 mt-1">
-                Ordering closed for today
-              </p>
-            )}
+            <p className="text-sm text-gray-500 mt-1">
+              {todayOrder
+                ? `Status: ${todayOrder.status}`
+                : orderingClosed
+                ? "Ordering closed for today"
+                : "You haven’t placed an order yet"}
+            </p>
           </div>
 
           <div className="text-2xl">
@@ -117,30 +127,62 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* BALANCE */}
-      <div className="bg-yellow-100 rounded-xl p-4">
-        <p className="text-sm text-gray-600">Current Balance</p>
-        <h2 className="text-2xl font-bold mt-1">₹ {balance?.balance ?? 0}</h2>
+      {/* WALLET */}
+      <div className="bg-gradient-to-br from-black to-neutral-900 rounded-2xl p-5 text-white shadow-md">
+        <p className="text-xs opacity-80">Virtual Wallet</p>
+        <h2 className="text-2xl font-bold mt-2">₹ {balance?.balance ?? 0}</h2>
 
-        <div className="flex justify-between text-xs text-gray-600 mt-2">
-          <span>Credit: ₹{balance?.credit ?? 0}</span>
-          <span>Debit: ₹{balance?.debit ?? 0}</span>
-        </div>
+        <p className="text-xs mt-1 text-green-400">
+          Safe for {Math.floor((balance?.balance ?? 0) / 90)} meals
+        </p>
+
+        <button className="mt-4 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded-xl transition">
+          + Add Money
+        </button>
+      </div>
+    </div>
+
+    {/* PLAN AHEAD */}
+    <div className="bg-white rounded-2xl p-5 shadow-sm flex justify-between items-center">
+      <div>
+        <p className="text-xs text-gray-500">Tomorrow</p>
+        <h4 className="font-semibold mt-1">Plan Ahead</h4>
+        <p className="text-sm text-gray-500 mt-1">Order before 10 PM</p>
       </div>
 
-      {/* WEEKLY ORDERS */}
-      <div className="bg-white rounded-xl p-4 shadow-sm">
-        <div className="flex justify-between items-center mb-2">
-          <p className="font-medium">This Week</p>
-        </div>
+      <button
+        onClick={() => navigate("/order")}
+        className="bg-black text-white px-4 py-2 rounded-xl flex items-center gap-2"
+      >
+        Place Order <FiArrowRight />
+      </button>
+    </div>
 
-        <div className="grid grid-cols-7 gap-2 text-center text-xs">
-          {weekDates.map((d) => (
+    {/* WEEKLY ORDERS */}
+    <div className="bg-white rounded-2xl p-5 shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h4 className="font-semibold">This Week</h4>
+        <button
+          onClick={() => navigate("/menu")}
+          className="text-sm text-yellow-600 font-medium"
+        >
+          View Menu
+        </button>
+      </div>
+
+      <div className="grid grid-cols-7 gap-2 text-center text-xs">
+        {weekDates.map((d) => {
+          const ordered = orderedDays.has(d);
+          const isToday = d === new Date().toISOString().split("T")[0];
+
+          return (
             <div
               key={d}
-              className={`rounded-lg py-2 ${
-                orderedDays.has(d)
+              className={`rounded-xl py-2 font-medium ${
+                ordered
                   ? "bg-green-100 text-green-700"
+                  : isToday
+                  ? "bg-yellow-100 text-yellow-700"
                   : "bg-gray-100 text-gray-400"
               }`}
             >
@@ -148,23 +190,25 @@ export default function StudentDashboard() {
                 weekday: "short",
               })}
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
-
-      {/* ACTION BUTTON */}
-      <button
-        disabled={orderingClosed && !todayOrder}
-        onClick={() => navigate(todayOrder ? "/history" : "/order")}
-        className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 ${
-          orderingClosed && !todayOrder
-            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-            : "bg-black text-white"
-        }`}
-      >
-        {todayOrder ? "View Today’s Order" : "Place Order"}
-        <FiArrowRight />
-      </button>
     </div>
-  );
+
+    {/* PRIMARY ACTION */}
+    <button
+      disabled={orderingClosed && !todayOrder}
+      onClick={() => navigate(todayOrder ? "/history" : "/order")}
+      className={`w-full py-4 rounded-2xl text-lg font-semibold flex items-center justify-center gap-2 transition ${
+        orderingClosed && !todayOrder
+          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+          : "bg-black text-white hover:bg-neutral-900"
+      }`}
+    >
+      {todayOrder ? "View Today’s Order" : "Place Order"}
+      <FiArrowRight />
+    </button>
+  </div>
+);
+
 }
