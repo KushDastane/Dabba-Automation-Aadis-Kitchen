@@ -64,9 +64,9 @@ export const getCookingSummaryForCurrentMeal = async () => {
     }
 
     // Extras
-    if (items.extras?.roti) {
-      summary.extraRoti += items.extras.roti;
-      summary.roti += items.extras.roti;
+    if (items.extras?.Roti) {
+      summary.extraRoti += items.extras.Roti;
+      summary.roti += items.extras.Roti;
     }
 
     // OTHER items
