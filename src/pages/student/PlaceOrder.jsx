@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { db } from "../../firebase/firebase";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
-import {
-  getTodayKey,
-  getTomorrowKey,
-  isAfterResetTime,
-} from "../../services/menuService";
+import { doc, onSnapshot } from "firebase/firestore";
+import { isAfterResetTime } from "../../services/menuService";
 import { placeStudentOrder } from "../../services/orderService";
 import { useAuthUser } from "../../hooks/useAuthUser";
 import { useNavigate } from "react-router-dom";
@@ -116,7 +112,7 @@ export default function PlaceOrder() {
   const mealSlotToShow = getEffectiveMealSlot();
 
   const canPlaceOrder = useMemo(() => {
-    if (mealSlotToShow === "lunch") return currentHour < 13;
+    if (mealSlotToShow === "lunch") return currentHour < 14;
     if (mealSlotToShow === "dinner") return currentHour < 20;
     return false;
   }, [mealSlotToShow, currentHour]);
@@ -200,15 +196,22 @@ export default function PlaceOrder() {
   const handlePlaceOrder = async () => {
     if (!selectedItem || !canPlaceOrder) return;
 
+    const orderItems = {
+      item: selectedItem.label,
+      unitPrice: selectedItem.price,
+      quantity,
+      extras: extrasQty,
+    };
+
+    // Set itemType for OTHER menus
+    if (selectedItem.key === "other") {
+      orderItems.itemType = "OTHER";
+    }
+
     await placeStudentOrder({
       studentId: authUser.uid,
       mealType: mealSlotToShow.toUpperCase(),
-      items: {
-        item: selectedItem.label,
-        unitPrice: selectedItem.price,
-        quantity,
-        extras: extrasQty,
-      },
+      items: orderItems,
     });
 
     navigate("/history");
@@ -363,7 +366,7 @@ export default function PlaceOrder() {
                 <div
                   key={e.name}
                   className="rounded-2xl bg-white/70 backdrop-blur-md px-4 py-3
-                         ring-1 ring-black/5 shadow-sm flex justify-between items-center"
+                 ring-1 ring-black/5 shadow-sm flex justify-between items-center"
                 >
                   <div>
                     <p className="font-medium text-gray-900">{e.name}</p>

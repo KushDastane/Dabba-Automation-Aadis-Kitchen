@@ -1,2 +1,1 @@
-- [x] Update AdminDashboard.jsx to use Firestore onSnapshot listener for real-time menu availability updates instead of polling
-- [x] Update PlaceOrder.jsx to use Firestore onSnapshot listener for real-time menu data updates instead of polling
+- [x] Update RecentOrdersPreview.jsx to use getCurrentMealSlot instead of getEffectiveMealSlot for displaying live orders based on lunch or dinner

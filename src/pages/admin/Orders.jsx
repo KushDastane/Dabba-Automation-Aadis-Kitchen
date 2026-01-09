@@ -20,7 +20,7 @@ export default function Orders() {
   const [statusFilter, setStatusFilter] = useState("ALL");
 
   useEffect(() => {
-    const unsub = listenToTodayOrders(getTodayKey(), async (list) => {
+    const unsub = listenToTodayOrders(getTodayKey(), null, async (list) => {
       const enriched = await Promise.all(
         list.map(async (order) => {
           try {

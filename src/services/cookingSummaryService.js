@@ -29,6 +29,7 @@ export const getCookingSummaryForCurrentMeal = async () => {
     extraRoti: 0,
 
     otherItems: {}, // { "Idli": 4 }
+    extraItems: {}, // { "Extra Idli": 2 }
   };
 
   snap.docs.forEach((doc) => {
@@ -73,6 +74,23 @@ export const getCookingSummaryForCurrentMeal = async () => {
     if (items.itemType === "OTHER") {
       summary.otherItems[items.item] =
         (summary.otherItems[items.item] || 0) + qty;
+    }
+
+    // Handle extras for all items (including OTHER)
+    if (items.extras) {
+      Object.entries(items.extras).forEach(([extraName, extraQty]) => {
+        if (extraName === "Roti") {
+          // Already handled above
+          return;
+        }
+        if (items.itemType === "OTHER" && extraName === items.item) {
+          summary.otherItems[extraName] =
+            (summary.otherItems[extraName] || 0) + extraQty;
+        } else {
+          summary.extraItems[extraName] =
+            (summary.extraItems[extraName] || 0) + extraQty;
+        }
+      });
     }
   });
 

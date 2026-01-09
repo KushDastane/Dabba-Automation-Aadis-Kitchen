@@ -1,22 +1,34 @@
 import { useEffect, useState } from "react";
 import { FiCheck, FiClock } from "react-icons/fi";
 import { listenToTodayOrders } from "../../services/adminOrderService";
-import { getTodayKey } from "../../services/menuService";
+import { getTodayKey, getCurrentMealSlot } from "../../services/menuService";
 
 export default function RecentOrdersPreview({ onConfirm }) {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    const unsub = listenToTodayOrders(getTodayKey(), (list) => {
-      setOrders(list.slice(0, 5));
+    const dateKey = getTodayKey();
+    const slot = getCurrentMealSlot(); // lunch | dinner
+
+    if (!slot) {
+      setOrders([]);
+      return;
+    }
+
+    console.log("🔍 Listening orders for:", { dateKey, slot });
+
+    const unsub = listenToTodayOrders(dateKey, slot, (list) => {
+      console.log("📦 Orders received:", list);
+      setOrders(list);
     });
-    return () => unsub();
+
+    return () => unsub && unsub();
   }, []);
 
-  if (orders.length === 0) {
+  if (!orders.length) {
     return (
       <div className="mt-10 text-center text-sm text-gray-500">
-        No orders placed yet today
+        No orders for this meal slot yet
       </div>
     );
   }
@@ -36,7 +48,9 @@ export default function RecentOrdersPreview({ onConfirm }) {
               <p className="text-sm font-semibold text-gray-900">
                 {o.items.quantity} × {o.items.item}
               </p>
-              <p className="text-xs text-gray-500 capitalize">{o.mealType}</p>
+              <p className="text-xs text-gray-500 capitalize">
+                {o.mealType.toLowerCase()}
+              </p>
             </div>
 
             {/* RIGHT */}
