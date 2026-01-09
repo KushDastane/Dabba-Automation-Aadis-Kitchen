@@ -21,7 +21,7 @@ import { getCurrentWeekDates } from "../../utils/weekUtils";
 export default function StudentDashboard() {
   const { authUser, profile } = useAuthUser();
   const navigate = useNavigate();
-
+  const tiffinIcon = "/icon/tiffin.png";
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState(null);
   const [todayOrder, setTodayOrder] = useState(null);
@@ -138,8 +138,16 @@ export default function StudentDashboard() {
           <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-yellow-100 flex items-center justify-center">
+                  <img
+                    src={tiffinIcon}
+                    alt="Tiffin"
+                    className="w-9 h-9 object-contain"
+                  />
+                </div>
+
                 <span className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-medium">
-                  TODAY'S {mealSlot.toUpperCase()}
+                  TODAY&apos;S {mealSlot.toUpperCase()}
                 </span>
               </div>
 

@@ -90,7 +90,7 @@ export default function AdminSidebar() {
         </div>
 
         {/* FOOTER (optional, feels premium) */}
-        <div className="mt-auto px-2 pt-6">
+        <div className="mt-50 px-2 pt-6">
           <div className="rounded-2xl bg-white/70 backdrop-blur px-4 py-3 text-xs text-gray-500 shadow-sm">
             Logged in as{" "}
             <span className="font-medium text-gray-800">Admin</span>
