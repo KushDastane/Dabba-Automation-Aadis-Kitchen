@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiClock, FiDollarSign, FiUsers, FiPackage } from "react-icons/fi";
+import { FiClock,FiUsers, FiPackage } from "react-icons/fi";
+import { MdCurrencyRupee } from "react-icons/md";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import CookingSummary from "../../components/admin/CookingSummary";
@@ -134,7 +135,7 @@ export default function AdminDashboard() {
           />
 
           <StatCard
-            icon={FiDollarSign}
+            icon={MdCurrencyRupee}
             label="Pending Payments"
             value={stats.pendingPayments}
             variant={stats.pendingPayments > 0 ? "warning" : "normal"}
@@ -157,10 +158,14 @@ export default function AdminDashboard() {
 
         {/* RIGHT – LIVE ORDERS */}
         <div className="lg:col-span-8">
-          <div className="h-full rounded-[32px] bg-[#faf9f6] p-6 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.25)] flex flex-col">
+          <div
+            className="h-full rounded-[32px] bg-[#faf9f6] p-6
+                  shadow-[0_20px_40px_-20px_rgba(0,0,0,0.25)]
+                  flex flex-col"
+          >
             {/* HEADER */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between pb-5 mb-5 border-b border-black/5">
+              <div className="flex items-center gap-4">
                 <div className="p-3 rounded-2xl bg-gradient-to-br from-yellow-300 to-yellow-400 shadow-md">
                   <FiPackage className="text-xl text-black" />
                 </div>
@@ -177,16 +182,22 @@ export default function AdminDashboard() {
 
               <button
                 onClick={() => navigate("/orders")}
-                className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-yellow-400 to-yellow-500
-                     hover:from-yellow-500 hover:to-yellow-600 transition
-                     text-black text-sm font-semibold shadow-md"
+                className="px-5 py-2.5 rounded-2xl
+                   bg-yellow-400 hover:bg-yellow-500
+                   transition
+                   text-black text-sm font-semibold
+                   shadow-sm hover:shadow-md"
               >
                 View All Orders
               </button>
             </div>
 
             {/* CONTENT */}
-            <div className="flex-1 overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 p-4">
+            <div
+              className="flex-1 rounded-2xl bg-white/70
+                 ring-1 ring-black/5
+                 p-4 overflow-hidden"
+            >
               <RecentOrdersPreview onConfirm={confirmOrder} />
             </div>
           </div>
@@ -249,4 +260,3 @@ function StatCard({ icon: Icon, label, value, variant = "normal" }) {
     </motion.div>
   );
 }
-

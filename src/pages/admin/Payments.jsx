@@ -17,7 +17,6 @@ import { FiImage } from "react-icons/fi";
 export default function Payments() {
   const [payments, setPayments] = useState([]);
   const [previewSlip, setPreviewSlip] = useState(null);
-
   const [statusFilter, setStatusFilter] = useState("ALL");
 
   /* ---------------- FETCH LAST 7 DAYS ---------------- */
@@ -63,9 +62,7 @@ export default function Payments() {
   const filteredPayments = useMemo(() => {
     return payments
       .filter((p) => {
-        if (statusFilter !== "ALL" && p.status !== statusFilter) {
-          return false;
-        }
+        if (statusFilter !== "ALL" && p.status !== statusFilter) return false;
         return true;
       })
       .sort((a, b) => {
@@ -93,22 +90,12 @@ export default function Payments() {
     return "Older";
   };
 
-  const getPaymentModeBadge = (mode) => {
-    if (mode === "CASH") {
-      return "bg-blue-100 text-blue-700";
-    }
-    return "bg-emerald-100 text-emerald-700";
-  };
-
-  /* ---------------- EMPTY STATE ---------------- */
-
-  if (filteredPayments.length === 0) {
-    return <p className="text-center mt-20 text-gray-400">No payments found</p>;
-  }
+  const getPaymentModeBadge = (mode) =>
+    mode === "CASH"
+      ? "bg-blue-100 text-blue-700"
+      : "bg-emerald-100 text-emerald-700";
 
   /* ---------------- UI ---------------- */
-
-  let lastRenderedGroup = null;
 
   return (
     <div className="pb-24 pt-6 bg-[#faf9f6] min-h-screen p-8">
@@ -121,12 +108,12 @@ export default function Payments() {
       </div>
 
       {/* STATUS FILTER */}
-      <div className="mb-6 flex flex-wrap gap-1 justify-center md:justify-start">
+      <div className="mb-6 inline-flex flex-wrap gap-1">
         {["ALL", "PENDING", "ACCEPTED", "REJECTED"].map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`px-4 py-2 rounded-full md:text-sm text-xs font-medium transition cursor-pointer
+            className={`px-4 py-2 rounded-full text-xs md:text-sm font-medium transition
               ${
                 statusFilter === s
                   ? "bg-yellow-400 text-black"
@@ -138,173 +125,161 @@ export default function Payments() {
         ))}
       </div>
 
-      {/* LIST WITH DAY PARTITIONS */}
-      <div className="space-y-4">
-        {filteredPayments.map((p) => {
-          const date = p.createdAt?.toDate();
-          const group = date ? getDayGroup(date) : "Older";
+      {/* LIST / EMPTY STATE */}
+      {filteredPayments.length === 0 ? (
+        <div className="mt-24 text-center">
+          <p className="text-sm text-gray-400">No payments found</p>
+          <p className="text-xs text-gray-300 mt-1">Try changing the filter</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredPayments.map((p, index) => {
+            const date = p.createdAt?.toDate();
+            const group = date ? getDayGroup(date) : "Older";
 
-          const showHeading = group !== lastRenderedGroup;
-          lastRenderedGroup = group;
+            const prev = filteredPayments[index - 1];
+            const prevGroup = prev?.createdAt
+              ? getDayGroup(prev.createdAt.toDate())
+              : null;
 
-          return (
-            <div key={p.id}>
-              {/* GROUP HEADING */}
-              {showHeading && (
-                <div className="mb-2 mt-6">
-                  <h4 className="text-xs md:text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                    {group}
-                  </h4>
-                </div>
-              )}
+            const showHeading = group !== prevGroup;
 
-              {/* PAYMENT CARD */}
-              <div
-                className={`rounded-3xl bg-white/70 backdrop-blur-md p-5 shadow-sm
-    ${p.status === "REJECTED" ? "ring-1 ring-red-300" : "ring-1 ring-black/5"}
-  `}
-              >
-                {/* TOP */}
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-yellow-100 text-yellow-800 flex items-center justify-center font-semibold">
-                      {p.studentName.charAt(0)}
+            return (
+              <div key={p.id}>
+                {/* GROUP HEADING */}
+                {showHeading && (
+                  <div className="mb-2 mt-6">
+                    <h4 className="text-xs md:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                      {group}
+                    </h4>
+                  </div>
+                )}
+
+                {/* PAYMENT CARD */}
+                <div
+                  className={`rounded-3xl bg-white/70 backdrop-blur-md p-5 shadow-sm
+                    ${
+                      p.status === "REJECTED"
+                        ? "ring-1 ring-red-300"
+                        : "ring-1 ring-black/5"
+                    }`}
+                >
+                  {/* TOP */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-yellow-100 text-yellow-800 flex items-center justify-center font-semibold">
+                        {p.studentName.charAt(0)}
+                      </div>
+
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {p.studentName}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {date?.toLocaleDateString()} ·{" "}
+                          {date?.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
                     </div>
 
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {p.studentName}
+                    <div className="text-right">
+                      <p
+                        className={`text-lg font-semibold ${
+                          p.status === "REJECTED"
+                            ? "text-red-600"
+                            : "text-emerald-600"
+                        }`}
+                      >
+                        ₹{p.amount}
                       </p>
-                      <p className="text-xs text-gray-400">
-                        {date?.toLocaleDateString()} ·{" "}
-                        {date?.toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
+
+                      <span
+                        className={`mt-1 inline-block text-[11px] px-2 mr-2 py-0.5 rounded-full font-medium
+                          ${getPaymentModeBadge(p.paymentMode)}`}
+                      >
+                        {p.paymentMode || "UPI"}
+                      </span>
+
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium
+                          ${
+                            p.status === "REJECTED"
+                              ? "bg-red-100 text-red-700"
+                              : p.status === "ACCEPTED"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-gray-100 text-gray-700"
+                          }`}
+                      >
+                        {p.status}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <p
-                      className={`text-lg font-semibold ${
-                        p.status === "REJECTED"
-                          ? "text-red-600"
-                          : "text-emerald-600"
-                      }`}
-                    >
-                      ₹{p.amount}
-                    </p>
-
-                    {/* PAYMENT MODE TAG */}
-                    <span
-                      className={`mt-1 inline-block text-[11px] px-2 mr-2 py-0.5 rounded-full font-medium
-    ${getPaymentModeBadge(p.paymentMode)}
-  `}
-                    >
-                      {p.paymentMode || "UPI"}
-                    </span>
-
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-medium
-    ${
-      p.status === "REJECTED"
-        ? "bg-red-100 text-red-700"
-        : p.status === "ACCEPTED"
-        ? "bg-emerald-100 text-emerald-700"
-        : "bg-gray-100 text-gray-700"
-    }
-  `}
-                    >
-                      {p.status}
-                    </span>
-                  </div>
-                </div>
-
-                {/* SLIP */}
-                {p.paymentMode === "UPI" && p.slipUrl && (
-                  <div
-                    onClick={() => setPreviewSlip(p.slipUrl)}
-                    className="flex items-center gap-3 rounded-2xl bg-gray-50 p-3 mb-4 cursor-pointer hover:bg-gray-100 transition"
-                  >
+                  {/* SLIP */}
+                  {p.paymentMode === "UPI" && p.slipUrl && (
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center
-    ${
-      p.status === "REJECTED"
-        ? "bg-red-50 text-red-600"
-        : "bg-emerald-50 text-emerald-600"
-    }
-  `}
+                      onClick={() => setPreviewSlip(p.slipUrl)}
+                      className="flex items-center gap-3 rounded-2xl bg-gray-50 p-3 mb-4 cursor-pointer hover:bg-gray-100 transition"
                     >
-                      <FiImage className="text-xl" />
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center
+                          ${
+                            p.status === "REJECTED"
+                              ? "bg-red-50 text-red-600"
+                              : "bg-emerald-50 text-emerald-600"
+                          }`}
+                      >
+                        <FiImage className="text-xl" />
+                      </div>
+
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Payment Slip</p>
+                        <p className="text-xs text-gray-400">
+                          Uploaded by {p.studentName}
+                        </p>
+                      </div>
+
+                      <span className="text-sm font-medium text-emerald-700">
+                        View
+                      </span>
                     </div>
+                  )}
 
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Payment Slip</p>
-                      <p className="text-xs text-gray-400">
-                        Uploaded by {p.studentName}
-                      </p>
+                  {/* ACTIONS */}
+                  {p.status === "PENDING" && (
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() =>
+                          rejectPayment(p.id, { studentId: p.studentId })
+                        }
+                        className="flex-1 h-11 rounded-2xl bg-red-100 text-red-700 hover:bg-red-200 transition flex items-center justify-center"
+                      >
+                        <RxCross2 className="text-xl" />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          acceptPayment(p.id, {
+                            studentId: p.studentId,
+                            amount: p.amount,
+                            reviewedBy: "admin",
+                          })
+                        }
+                        className="flex-1 h-11 rounded-2xl bg-emerald-500 text-white hover:bg-emerald-600 transition flex items-center justify-center"
+                      >
+                        <FaCheck className="text-xl" />
+                      </button>
                     </div>
-
-                    <span
-                      className={`text-sm font-medium ${
-                        p.status === "REJECTED"
-                          ? "text-red-600"
-                          : "text-emerald-700"
-                      }`}
-                    >
-                      View
-                    </span>
-                  </div>
-                )}
-
-                {/* ACTIONS */}
-                {p.status === "PENDING" && (
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() =>
-                        rejectPayment(p.id, { studentId: p.studentId })
-                      }
-                      className="
-      flex-1 h-11
-      flex items-center justify-center
-      rounded-2xl
-      bg-red-100 text-red-700
-      hover:bg-red-200
-      transition
-    "
-                      aria-label="Reject payment"
-                    >
-                      <RxCross2 className="text-xl" />
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        acceptPayment(p.id, {
-                          studentId: p.studentId,
-                          amount: p.amount,
-                          reviewedBy: "admin",
-                        })
-                      }
-                      className="
-      flex-1 h-11
-      flex items-center justify-center
-      rounded-2xl
-      bg-emerald-500 text-white
-      hover:bg-emerald-600
-      transition
-    "
-                      aria-label="Accept payment"
-                    >
-                      <FaCheck className="text-xl" />
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* SLIP MODAL */}
       {previewSlip && (
