@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { FiClock, FiDollarSign, FiUsers, FiPackage } from "react-icons/fi";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
+import CookingSummary from "../../components/admin/CookingSummary";
+import { getCookingSummaryForCurrentMeal } from "../../services/cookingSummaryService";
 
 import RecentOrdersPreview from "../../components/admin/RecentOrders";
 import MealStatusBanner from "../../components/admin/MealStatusBanner";
@@ -16,7 +18,6 @@ import {
 } from "../../services/menuService";
 
 export default function AdminDashboard() {
-  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,24 +33,24 @@ export default function AdminDashboard() {
 
   const [menuData, setMenuData] = useState(null);
   const [currentTime, setCurrentTime] = useState(0);
+  const [cookingSummary, setCookingSummary] = useState(null);
 
   const dateKey = useMemo(() => getEffectiveMenuDateKey(), [currentTime]);
   const slot = useMemo(() => getEffectiveMealSlot(), [currentTime]);
 
-const menuAvailable = useMemo(() => {
-  if (!slot) return false;
-  if (!menuData) return false;
+  const menuAvailable = useMemo(() => {
+    if (!slot) return false;
+    if (!menuData) return false;
 
-  const slotMenu = menuData[slot];
-  if (!slotMenu) return false;
+    const slotMenu = menuData[slot];
+    if (!slotMenu) return false;
 
-  return (
-    typeof slotMenu === "object" &&
-    slotMenu.type &&
-    (slotMenu.rotiSabzi || slotMenu.other)
-  );
-}, [menuData, slot]);
-
+    return (
+      typeof slotMenu === "object" &&
+      slotMenu.type &&
+      (slotMenu.rotiSabzi || slotMenu.other)
+    );
+  }, [menuData, slot]);
 
   useEffect(() => {
     const unsubStats = listenToAdminStats(setStats);
@@ -74,6 +75,13 @@ const menuAvailable = useMemo(() => {
       if (unsubMenu) unsubMenu();
     };
   }, [dateKey, slot]);
+  useEffect(() => {
+    if (!slot) return;
+
+    getCookingSummaryForCurrentMeal()
+      .then(setCookingSummary)
+      .catch(console.error);
+  }, [slot, dateKey]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -109,6 +117,9 @@ const menuAvailable = useMemo(() => {
           stats={stats}
           slot={slot}
         />
+        <div className="mx-4 md:mx-6 lg:mx-10 mt-6">
+          <CookingSummary summary={cookingSummary} />
+        </div>
       </div>
 
       {/* MAIN GRID */}
