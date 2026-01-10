@@ -10,6 +10,7 @@ const rotiIcon = "/icon/roti.png";
 const dalIcon = "/icon/dal.png";
 
 export default function CookingSummary({ summary, menu }) {
+  console.log("CookingSummary props:", { summary, menu });
   const menuCards = [];
 
   if (summary && menu?.type === "ROTI_SABZI") {
@@ -27,6 +28,22 @@ export default function CookingSummary({ summary, menu }) {
         gradient: "from-yellow-400 to-orange-400",
       }
     );
+  }
+
+  // Show OTHER items if they exist (regardless of menu type)
+  if (summary && summary.otherItems) {
+    console.log("otherItems found:", summary.otherItems);
+    Object.entries(summary.otherItems).forEach(([itemName, qty]) => {
+      if (qty > 0) {
+        console.log("Adding OTHER card:", itemName, qty);
+        menuCards.push({
+          label: itemName,
+          value: qty,
+          icon: FiPlusCircle,
+          gradient: "from-purple-300 to-pink-400",
+        });
+      }
+    });
   }
 
   const normalizedExtras = {};

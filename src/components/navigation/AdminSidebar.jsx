@@ -20,7 +20,7 @@ export default function AdminSidebar() {
   const { pathname } = useLocation();
 
   return (
-    <aside className="hidden md:flex w-72 min-h-screen bg-[#fffaf2] border-r border-black/5">
+    <aside className="hidden md:flex w-72 min-h-screen bg-[#fffaf2] border-r border-black/5 fixed top-0 left-0 z-10">
       <div className="w-full px-4 py-6 flex flex-col">
         {/* BRAND */}
         <div className="flex items-center gap-3 mb-10 px-2">

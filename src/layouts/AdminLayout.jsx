@@ -9,7 +9,7 @@ export default function AdminLayout({ children }) {
       <AdminSidebar />
 
       {/* Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col md:ml-72">
         {/* 
           pb-20 ONLY on mobile because bottom nav exists ONLY on mobile
           NO padding on desktop

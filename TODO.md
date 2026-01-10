@@ -1,1 +1,4 @@
-- [x] Update RecentOrdersPreview.jsx to use getCurrentMealSlot instead of getEffectiveMealSlot for displaying live orders based on lunch or dinner
+# TODO: Make Admin Sidebar Fixed
+
+- [x] Update AdminSidebar.jsx to use fixed positioning
+- [x] Update AdminLayout.jsx to add margin-left to content area for desktop
