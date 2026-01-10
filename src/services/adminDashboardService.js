@@ -7,32 +7,31 @@ import { getDailyStats } from "./dailyStatsService";
 /**
  * Real-time dashboard stats
  */
-export const listenToAdminStats = (callback) => {
+export const listenToAdminStats = (callback, slot) => {
   const today = getTodayKey();
 
-  // Listen to daily stats for cumulative totalOrders
-  const unsubDailyStats = onSnapshot(doc(db, "dailyStats", today), (snap) => {
-    const totalOrders = snap.exists() ? snap.data().totalOrders : 0;
-    callback((prev) => ({
-      ...prev,
-      totalOrders,
-    }));
-  });
-
   const unsubOrders = onSnapshot(
-    query(collection(db, "orders"), where("date", "==", today)),
+    query(
+      collection(db, "orders"),
+      where("date", "==", today),
+      where("mealType", "==", slot?.toUpperCase())
+    ),
     (snap) => {
       let pending = 0;
+      let totalOrders = 0;
       const students = new Set();
 
       snap.docs.forEach((d) => {
-        students.add(d.data().studentId);
-        if (d.data().status === "PENDING") pending++;
+        const data = d.data();
+        students.add(data.studentId);
+        if (data.status === "PENDING") pending++;
+        if (data.status === "CONFIRMED") totalOrders++;
       });
 
       callback((prev) => ({
         ...prev,
         pendingOrders: pending,
+        totalOrders,
         studentsToday: students.size,
       }));
     }
@@ -49,7 +48,6 @@ export const listenToAdminStats = (callback) => {
   );
 
   return () => {
-    unsubDailyStats();
     unsubOrders();
     unsubPayments();
   };

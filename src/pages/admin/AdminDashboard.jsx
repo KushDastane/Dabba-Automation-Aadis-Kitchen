@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiClock,FiUsers, FiPackage } from "react-icons/fi";
+import { FiClock, FiUsers, FiPackage } from "react-icons/fi";
 import { MdCurrencyRupee } from "react-icons/md";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
@@ -54,7 +54,7 @@ export default function AdminDashboard() {
   }, [menuData, slot]);
 
   useEffect(() => {
-    const unsubStats = listenToAdminStats(setStats);
+    const unsubStats = listenToAdminStats(setStats, slot);
 
     let unsubMenu;
     if (slot) {
