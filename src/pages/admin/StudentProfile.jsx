@@ -5,6 +5,7 @@ import { db } from "../../firebase/firebase";
 
 import { getStudentOrders } from "../../services/orderService";
 import { getStudentPayments } from "../../services/paymentService";
+import { getStudentBalance } from "../../services/balanceService";
 
 import { DayPicker } from "react-day-picker";
 
@@ -26,6 +27,7 @@ export default function StudentProfile() {
   const [activeTab, setActiveTab] = useState("OVERVIEW");
   const [orders, setOrders] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [balance, setBalance] = useState(null);
 
   const [dateRange, setDateRange] = useState({ from: null, to: null });
   const [showCalendar, setShowCalendar] = useState(false);
@@ -49,10 +51,16 @@ export default function StudentProfile() {
     if (activeTab === "ORDERS" && orders.length === 0) {
       getStudentOrders(studentId).then(setOrders);
     }
-    if (activeTab === "PAYMENTS" && payments.length === 0) {
+    if (
+      (activeTab === "PAYMENTS" || activeTab === "OVERVIEW") &&
+      payments.length === 0
+    ) {
       getStudentPayments(studentId).then(setPayments);
     }
-  }, [activeTab, studentId]);
+    if (balance === null) {
+      getStudentBalance(studentId).then(setBalance);
+    }
+  }, [activeTab, studentId, balance]);
 
   /* ---------------- DATE FILTER ---------------- */
 
@@ -75,9 +83,7 @@ export default function StudentProfile() {
   /* ---------------- OVERVIEW STATS ---------------- */
 
   const totalOrders = orders.length;
-  const pendingDues = payments
-    .filter((p) => p.status === "PENDING")
-    .reduce((sum, p) => sum + p.amount, 0);
+  const pendingDues = balance ? Math.max(0, -balance.balance) : 0;
 
   /* ---------------- STATES ---------------- */
 
@@ -300,5 +306,3 @@ function Card({ title, subtitle, amount, status, paymentMode }) {
     </div>
   );
 }
-
-
