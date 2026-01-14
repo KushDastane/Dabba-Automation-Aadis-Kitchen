@@ -80,7 +80,7 @@ export default function CookingSummary({ summary, menu }) {
           {menu?.type === "ROTI_SABZI" && (
             <>
               <SummaryCard
-                label="Rotis(Extra incl.)"
+                label="Total Rotis(Extra incl.)"
                 value={summary.roti || 0}
                 icon={rotiIcon}
                 gradient="from-amber-300 to-yellow-500"
