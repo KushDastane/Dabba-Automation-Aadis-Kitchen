@@ -4,6 +4,9 @@ import {
   getKitchenConfig,
   updateKitchenConfig,
 } from "../../services/kitchenService";
+import { auth } from "../../firebase/firebase";
+import { signOut } from "firebase/auth";
+import { FiLogOut } from "react-icons/fi";
 
 export default function KitchenSettings() {
   const [loading, setLoading] = useState(true);
@@ -18,6 +21,11 @@ export default function KitchenSettings() {
     };
     load();
   }, []);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    window.location.reload();
+  };
 
   if (loading) {
     return (
@@ -170,6 +178,16 @@ export default function KitchenSettings() {
                      shadow-sm transition disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save Settings"}
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className="w-full  cursor-pointer rounded-2xl bg-red-50 text-red-700 py-3
+                             font-medium flex items-center justify-center gap-2
+                             ring-1 ring-red-200 hover:bg-red-100 transition"
+        >
+          <FiLogOut />
+          Logout
         </button>
       </div>
     </div>
