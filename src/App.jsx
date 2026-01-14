@@ -7,6 +7,7 @@ import ProfileSetup from "./pages/ProfileSetup";
 // layouts
 import StudentLayout from "./layouts/StudentLayout";
 import AdminLayout from "./layouts/AdminLayout";
+import AppLoader from "./components/AppLoader";
 
 // student pages
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -28,7 +29,7 @@ import StudentProfile from "./pages/admin/StudentProfile";
 export default function App() {
   const { loading, isAuthenticated, isProfileComplete, role } = useAuthUser();
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <AppLoader />;
   if (!isAuthenticated) return <DevLogin />;
   if (!isProfileComplete) return <ProfileSetup />;
 
