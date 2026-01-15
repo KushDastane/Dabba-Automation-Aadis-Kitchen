@@ -67,7 +67,7 @@ export const getMenuForDate = async (dateKey) => {
 
 export const getCurrentMealSlot = () => {
   const hour = new Date().getHours();
-  return hour < 14 ? "lunch" : "dinner";
+  return hour < 15 ? "lunch" : "dinner";
 };
 
 /* ---------------- FREE DAILY RESET ---------------- */
@@ -127,7 +127,7 @@ export const getEffectiveMenuDateKey = () => {
 export const getEffectiveMealSlot = () => {
   const hour = new Date().getHours();
 
-  if (hour < 14) return "lunch";
+  if (hour < 15) return "lunch";
   if (hour < 21) return "dinner";
 
   return null;

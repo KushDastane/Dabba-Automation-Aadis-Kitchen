@@ -252,7 +252,7 @@ export default function StudentDashboard() {
             </h2>
 
             <p className="text-sm text-green-400 mb-8">
-              Enough for approx. {Math.floor((balance?.balance ?? 0) / 90)}{" "}
+              Enough for approx. {Math.floor((balance?.balance ?? 0) / 50)}{" "}
               meals
             </p>
 

@@ -112,7 +112,7 @@ export default function PlaceOrder() {
   const mealSlotToShow = getEffectiveMealSlot();
 
   const canPlaceOrder = useMemo(() => {
-    if (mealSlotToShow === "lunch") return currentHour < 14;
+    if (mealSlotToShow === "lunch") return currentHour < 15;
     if (mealSlotToShow === "dinner") return currentHour < 20;
     return false;
   }, [mealSlotToShow, currentHour]);
